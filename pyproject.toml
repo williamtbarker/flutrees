@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 authors = [{name = "William Barker"}]
 license = {text = "MIT"}
+
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
@@ -18,6 +19,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
+
 dependencies = [
   "biopython>=1.80",
   "pandas>=1.5",
@@ -52,4 +54,13 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
-ignore = ["E501"]
+ignore = [
+  "E501",  # line length: preserve recovered source formatting
+  "E701",  # compact statements: preserve recovered source
+  "E702",  # semicolon statements: preserve recovered source
+  "I001",  # import ordering: do not rewrite recovered source solely for style
+  "B008",  # Typer intentionally uses Option/Argument calls in defaults
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Option", "typer.Argument"]
