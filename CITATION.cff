@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "FluTrees"
+version: 0.1.0
+date-released: 2026-09-05
+authors:
+  - family-names: Barker
+    given-names: Will
+repository-code: "https://github.com/williamtbarker/flutrees"
+url: "https://github.com/williamtbarker/flutrees"
+license: MIT
+keywords:
+  - influenza
+  - bioinformatics
+  - viral genomics
+  - sequence analysis
+  - mutation analysis
