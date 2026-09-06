@@ -10,11 +10,9 @@ Python source for the FluTrees project.
 
 FluTrees was developed to organize influenza HA sequence batches into interpretable mutation-based tree representations. The workflow includes sequence-window extraction, MAFFT alignment, reference-sequence selection, mutation calling, full and pruned tree construction, and generation of analysis artifacts for downstream review.
 
-This repository preserves and consolidates the strongest Python implementation from the project's historical development record. Scientific assumptions and interpretation of outputs remain the responsibility of the endpoint subject-matter expert.
-
 ## Intended Use
 
-FluTrees is intended as a research and analytical software tool for influenza hemagglutinin (HA) sequence-analysis workflows targeting the 200 amino acid antigenic region as the default for building the resulting trees. FluTrees offers flexibility at the command line to customize the HA frame of analysis. It was initially developed as a custom tool for a specific user and workflow, and public release should not be interpreted as validation for every dataset, scientific question, or operational environment.
+FluTrees is intended as a research and analytical software tool for influenza hemagglutinin (HA) sequence-analysis workflows targeting the 200 amino acid antigenic region as the default for building the resulting trees. FluTrees offers flexibility at the command line to customize the HA frame of analysis. The workflow requires validation for each dataset, scientific question, and operational environment.
 
 Users should independently validate inputs, parameters, software dependencies, outputs, and scientific interpretation for their own use case. FluTrees is not presented as a clinical diagnostic device or as a substitute for expert review.
 
@@ -41,7 +39,7 @@ MAFFT must be available on `PATH` or supplied with `--mafft`.
 
 ## Repository layout
 
-- `src/flutrees/` — canonical recovered package
+- `src/flutrees/` — Python package
 - `tests/` — software-level regression tests
 
 ## If you do not have MAFFT
