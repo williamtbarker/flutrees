@@ -1,5 +1,9 @@
 # FluTrees
 
+[![CI](https://github.com/williamtbarker/flutrees/actions/workflows/ci.yml/badge.svg)](https://github.com/williamtbarker/flutrees/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/williamtbarker/flutrees)](https://github.com/williamtbarker/flutrees/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/williamtbarker/flutrees?display_name=tag&sort=semver)](https://github.com/williamtbarker/flutrees/releases)
+
 Python source for the FluTrees project.
 
 ## Scientific Purpose
