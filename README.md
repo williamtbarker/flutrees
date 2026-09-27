@@ -12,13 +12,17 @@ FluTrees was developed to organize influenza HA sequence batches into interpreta
 
 ## Intended Use
 
-FluTrees is intended as a research and analytical software tool for influenza hemagglutinin (HA) sequence-analysis workflows targeting the 200 amino acid antigenic region as the default for building the resulting trees. FluTrees offers flexibility at the command line to customize the HA frame of analysis. The workflow requires validation for each dataset, scientific question, and operational environment.
+FluTrees is intended as a research and analytical software tool for influenza hemagglutinin (HA) sequence-analysis workflows. By default, it extracts residues 84–284 inclusive, a 201-amino-acid window, for building the resulting trees. FluTrees offers flexibility at the command line to customize the HA frame of analysis. The workflow requires validation for each dataset, scientific question, and operational environment.
 
 Users should independently validate inputs, parameters, software dependencies, outputs, and scientific interpretation for their own use case. FluTrees is not presented as a clinical diagnostic device or as a substitute for expert review.
 
 ## Installation
 
 ```bash
+git clone https://github.com/williamtbarker/flutrees.git
+cd flutrees
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e .
 ```
 
