@@ -1,4 +1,5 @@
 import json
+import xml.etree.ElementTree as ET
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import Mock
@@ -49,8 +50,8 @@ def test_complete_run_and_artifact_contents(tmp_path, cfg, fasta):
         if not a["href"].startswith("#"):
             assert (out / a["href"]).exists()
     for name in ["tree_full.svg", "tree_pruned.svg"]:
-        svg = BeautifulSoup((out / name).read_text(), "xml")
-        assert len(svg.find_all("text")) >= 6
+        svg = ET.parse(out / name)
+        assert len(svg.findall(".//{http://www.w3.org/2000/svg}text")) >= 6
     assert (out / "tree_full.png").read_bytes().startswith(b"\x89PNG")
     before = (out / "summary.json").read_bytes()
     with pytest.raises(FileExistsError):
