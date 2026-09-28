@@ -1,44 +1,97 @@
-from __future__ import annotations
+"""Backward-compatible command line plus example and desktop entry points."""
 
 import os
+import webbrowser
+from importlib.resources import files
 from pathlib import Path
 from typing import List, Optional
 
 import typer
+from . import __version__
 from .config import RunConfig
 
-app = typer.Typer(add_completion=False, help="flutrees: mutation decision-tree reporting")
+app = typer.Typer(
+    add_completion=False,
+    help="FluTrees: protein FASTA to visual trees, PDF reports, and Excel tables.",
+)
+
+
+def show_version(value: bool):
+    if value:
+        typer.echo(f"FluTrees {__version__}")
+        raise typer.Exit()
+
+
+def demo_path():
+    return Path(str(files("flutrees").joinpath("data/example.fasta")))
+
 
 @app.command()
 def run(
-    inputs: List[Path] = typer.Option(..., "-i", "--input", exists=True, readable=True, help="Input FASTA files"),
-    outdir: Path = typer.Option(Path("runs"), "-o", "--outdir", help="Base output directory"),
-    run_id: Optional[str] = typer.Option(None, "--run-id", help="Run identifier (default: job<SLURM_JOB_ID> or timestamp)"),
-    mafft: str = typer.Option("mafft", "--mafft", help="MAFFT executable in PATH (or absolute path)"),
-    threads: Optional[int] = typer.Option(None, "--threads", help="Threads (default: SLURM_CPUS_PER_TASK or 8)"),
-    start_residue: int = typer.Option(84, "--start", help="Start residue (1-based, inclusive)"),
-    end_residue: int = typer.Option(284, "--end", help="End residue (1-based, inclusive)"),
-    max_depth: int = typer.Option(10, "--max-depth", help="Max tree depth"),
-    min_split: int = typer.Option(5, "--min-split", help="Minimum sequences per child to split"),
-    min_freq: float = typer.Option(0.05, "--min-freq", help="Min mutation frequency (fraction of node sequences)"),
-    prune_cutoff: int = typer.Option(10, "--prune-cutoff", help="Hide nodes with < N sequences in pruned tree"),
+    inputs: Optional[List[Path]] = typer.Option(
+        None,
+        "-i",
+        "--input",
+        exists=True,
+        readable=True,
+        dir_okay=False,
+        help="Protein FASTA file. Repeat -i for multiple files.",
+    ),
+    outdir: Path = typer.Option(Path("runs"), "-o", "--outdir", help="Results folder"),
+    run_id: Optional[str] = typer.Option(
+        None, "--run-id", help="Run folder name; existing runs are never overwritten"
+    ),
+    mafft: str = typer.Option("mafft", "--mafft", help="MAFFT executable in PATH or its full path"),
+    threads: Optional[int] = typer.Option(
+        None, "--threads", help="CPU threads; default: SLURM setting or 8"
+    ),
+    start_residue: int = typer.Option(
+        84, "--start", help="First input residue (1-based, inclusive)"
+    ),
+    end_residue: int = typer.Option(284, "--end", help="Last input residue (inclusive)"),
+    max_depth: int = typer.Option(10, "--max-depth", help="Maximum tree depth"),
+    min_split: int = typer.Option(5, "--min-split", help="Minimum records in each child group"),
+    min_freq: float = typer.Option(0.05, "--min-freq", help="Minimum fraction in each child group"),
+    prune_cutoff: int = typer.Option(
+        10, "--prune-cutoff", help="Hide groups smaller than this in simplified view"
+    ),
+    demo: bool = typer.Option(False, "--demo", help="Run the included synthetic protein example"),
+    open_results: bool = typer.Option(
+        False, "--open", help="Open the results overview in your browser"
+    ),
+    gui: bool = typer.Option(False, "--gui", help="Open the desktop file-selection window"),
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=show_version, is_eager=True, help="Show installed version"
+    ),
 ):
-    cfg = RunConfig(
-        mafft=mafft,
-        threads=threads,
-        start_residue=start_residue,
-        end_residue=end_residue,
-        max_depth=max_depth,
-        min_split=min_split,
-        min_freq=min_freq,
-        prune_cutoff=prune_cutoff,
-    )
+    if gui:
+        from .gui import launch
 
-    if run_id is None:
-        sj = os.environ.get("SLURM_JOB_ID")
-        run_id = f"job{sj}" if sj else RunConfig.default_run_id()
+        launch()
+        return
+    if demo and inputs:
+        raise typer.BadParameter("Use --demo by itself, or select your own files with -i.")
+    if demo:
+        inputs = [demo_path()]
+    if not inputs:
+        typer.echo(
+            "Choose protein FASTA files with -i, try --demo --open, or use --gui for file selection."
+        )
+        raise typer.Exit(2)
+    try:
+        cfg = RunConfig(
+            mafft, threads, start_residue, end_residue, max_depth, min_split, min_freq, prune_cutoff
+        )
+        if run_id is None:
+            sj = os.environ.get("SLURM_JOB_ID")
+            run_id = f"job{sj}" if sj else RunConfig.default_run_id()
+        from .pipeline import run_many
 
-    # Lazy import to keep `--help` working even if downstream modules are mid-edit
-    from .pipeline import run_many
-
-    run_many(cfg, inputs, outdir.resolve(), run_id)
+        root = run_many(cfg, inputs, outdir.resolve(), run_id, typer.echo)
+    except (ValueError, OSError) as error:
+        typer.echo(f"Could not complete analysis: {error}", err=True)
+        raise typer.Exit(1) from error
+    if open_results and not webbrowser.open((root / "START_HERE.html").as_uri()):
+        typer.echo(
+            "Your browser did not open automatically. Open START_HERE.html at the path shown above."
+        )

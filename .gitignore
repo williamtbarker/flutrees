@@ -14,3 +14,7 @@ runs_flutrees2/
 
 # Local recovery/provenance material
 recovery/
+.coverage
+coverage.json
+coverage.xml
+htmlcov/

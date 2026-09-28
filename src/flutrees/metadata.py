@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict
 
+
 def parse_header_robust(header: str) -> Dict[str, str]:
     """
     Best-effort parser.
@@ -33,7 +34,7 @@ def parse_header_robust(header: str) -> Dict[str, str]:
 
     sp = out["strain"].split("/")
     if len(sp) >= 4:
-        out["location"] = (sp[1].strip() or out["location"])
-        out["date"] = (sp[-1].strip() or out["date"])
+        out["location"] = sp[1].strip() or out["location"]
+        out["date"] = sp[-1].strip() or out["date"]
 
     return out
