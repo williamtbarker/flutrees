@@ -202,10 +202,6 @@ def write_html(outpath, summary, full, pruned, metadata):
             f"<tr><td>{esc(r)}</td><td>{esc(names[r])}</td></tr>" for r in sorted(node.seqs)
         )
         note = node.stop_reason
-        if not note and node.support > sum(
-            c.support for c in (node.left, node.right) if c is not None
-        ):
-            note = "Some or all descendant groups are hidden by pruning. Use the full tree to see them."
         return (
             f"<details open><summary>#{node.node_id} {esc(node.label)} — {node.support:,} records "
             f'({node.support / full.support:.1%} of input)</summary><p class="note">{esc(note)}</p>'

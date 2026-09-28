@@ -104,7 +104,10 @@ Results are in `results/<run ID>/<input filename>/`. On SLURM, the default run I
 
 - **This is a mutation decision tree, not a phylogenetic reconstruction.** A branch partitions records by presence of a called amino-acid substitution. Counts are sequence records, including duplicate sequences, not confidence or bootstrap support.
 - Each input file is analyzed separately. FluTrees extracts the requested input-residue window before alignment. Supply amino-acid sequences with a consistent starting/numbering convention; it does not detect signal peptides, subtype numbering schemes, or mixed HA segments automatically.
+- Supply **unaligned** protein FASTA, without `-` gap characters. A gapped alignment counts columns differently from residues and is rejected before analysis. A single terminal `*` is removed and recorded; internal stop markers require checking the translation. `?`, `U`, and `O` are represented as `X` (unknown) and flagged, preserving their positions. Windows consisting entirely of unknown residues are rejected.
 - MAFFT runs in amino-acid mode. The reference is the most common aligned sequence within that input file. A tie selects the first occurrence. The actual reference ID and sequence are recorded in `summary.json`.
+- FluTrees uses compact IDs when calling MAFFT, then restores full original IDs and input order. It verifies that alignment preserved every extracted residue. The `alignment_id` column links the diagnostic `mafft_input.fasta` file to Records. A short selected reference is explicitly flagged because positions outside it cannot be compared.
+- Each dataset retains an exact `input.fasta` snapshot. Its checksum identifies the bytes actually analyzed, even if the source file is edited while a run is in progress.
 - Mutation labels use **ungapped selected-reference residue positions, offset by the selected window start**. They are not a mapping to standardized H3, H1, or mature-HA numbering. Insertions relative to the chosen reference are outside this substitution-only analysis.
 - Missing, ambiguous, and deleted residues are recorded as `uncertain_positions`. A candidate split is withheld if any record in the node has an uncertain observation at that position, so missing evidence is not labeled as a confirmed negative.
 - Among eligible splits, the most frequent substitution is selected; ties preserve input/mutation encounter order. Both children must meet the minimum record count and frequency. The fractional threshold is enforced with a ceiling.
@@ -113,12 +116,17 @@ Results are in `results/<run ID>/<input filename>/`. On SLURM, the default run I
 
 Version 0.2 corrects residue numbering after reference gaps, fractional-threshold rounding, and missing-observation handling. These corrections can change mutation labels or groups compared with 0.1; review them when comparing historical analyses. The original numbering convention and first-window extraction should be checked against your laboratory's inputs before scientific interpretation.
 
+Version 0.2.1 additionally prevents residue loss during alignment and uses exact decimal frequency thresholds (for example, 7 of 100 records qualifies at 0.07). See the [adversarial review](docs/adversarial-review-2026-09-28.md) for reproduced defects, fixes, and remaining validation limits.
+
 ## When something goes wrong
 
 | Message or symptom | What to do |
 |---|---|
 | MAFFT was not found | Install MAFFT and check `mafft --version`; the CLI also accepts `--mafft /full/path/to/mafft`. |
 | No residues in the selected window | Check the sequence lengths and the First/Last residue settings. |
+| Input contains alignment gaps | Supply the original unaligned proteins. Do not assume existing alignment columns are residue coordinates. |
+| Internal stop marker | Check the translation and sequence quality; only a single terminal stop is removed automatically. |
+| MAFFT changed or removed residues | Inspect the original input and `mafft_input.fasta`; the analysis has stopped to protect residue numbering. |
 | Input filenames share an output folder | Rename the input files so their names differ, even if they live in different folders. |
 | A run directory already exists | Choose a new run ID; previous results are protected. |
 | MAFFT failed | Open `mafft.log` in that dataset's folder. |
@@ -126,7 +134,7 @@ Version 0.2 corrects residue numbering after reference gaps, fractional-threshol
 | JSON exists but the report is missing | Read `status.json`; the run may have failed during export. A complete run lists its artifacts. |
 | The simplified tree shows only one group | Open the full tree and read the QC notes; small groups may be hidden by the pruning cutoff. |
 
-The program only reports completion once all required exports are present and nonempty. Partial artifacts and a failure status are retained for diagnosis. A browser failing to open does not delete or invalidate the completed results.
+The program only reports completion once all required exports, including the overview PNG/SVG figures and data tables, are present and nonempty. Partial artifacts and a failure status are retained for diagnosis. Interrupting a command-line run with Ctrl+C marks it as failed; a forcibly terminated process may leave a running status, which is not a completed analysis. A browser failing to open does not delete or invalidate the completed results.
 
 ## Development and testing
 

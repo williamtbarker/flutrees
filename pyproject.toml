@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flutrees"
-version = "0.2.0"
+version = "0.2.1"
 description = "Toolkit for interpretable influenza HA mutation-tree analysis"
 readme = "README.md"
 requires-python = ">=3.9"

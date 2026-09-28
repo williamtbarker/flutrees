@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import typer
+from xlsxwriter.exceptions import FileCreateError
 from . import __version__
 from .config import RunConfig
 
@@ -88,7 +89,7 @@ def run(
         from .pipeline import run_many
 
         root = run_many(cfg, inputs, outdir.resolve(), run_id, typer.echo)
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, FileCreateError) as error:
         typer.echo(f"Could not complete analysis: {error}", err=True)
         raise typer.Exit(1) from error
     if open_results and not webbrowser.open((root / "START_HERE.html").as_uri()):

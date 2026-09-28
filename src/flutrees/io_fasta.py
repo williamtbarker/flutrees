@@ -10,6 +10,8 @@ from Bio.SeqRecord import SeqRecord
 
 from .metadata import parse_header_robust
 
+AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWY")
+
 
 def extract_region(seq: Seq, start_residue: int, end_residue: int) -> Seq:
     if start_residue < 1 or end_residue < start_residue:
@@ -39,8 +41,25 @@ def load_fasta_extract_all(fasta: Path, start_residue: int, end_residue: int) ->
     extracted: List[SeqRecord] = []
 
     for r in records:
-        if not r.seq or set(str(r.seq).upper()) - set("ACDEFGHIKLMNPQRSTVWYXBZJUO*?-"):
+        sequence = str(r.seq).upper()
+        if not r.id:
+            raise ValueError("Every FASTA record needs a nonempty ID after >.")
+        if not sequence or set(sequence) - set("ACDEFGHIKLMNPQRSTVWYXBZJUO*?-"):
             raise ValueError(f"Invalid protein sequence in record {r.id}.")
+        if "-" in sequence:
+            raise ValueError(
+                f"Record {r.id} contains alignment gaps. Supply unaligned protein FASTA; "
+                "window positions count residues, not alignment columns."
+            )
+        terminal_stop_removed = sequence.endswith("*")
+        if terminal_stop_removed:
+            sequence = sequence[:-1]
+        if "*" in sequence:
+            raise ValueError(f"Record {r.id} contains an internal stop (*). Check the protein translation.")
+        # MAFFT drops '?' and rejects U/O in amino-acid mode. Preserve positions
+        # as unknown observations instead of losing residues or changing numbering.
+        normalized_residues = sum(sequence.count(c) for c in "?UO")
+        sequence = sequence.translate(str.maketrans({c: "X" for c in "?UO"}))
         sid = r.id
         if sid in seen:
             k = 2
@@ -50,10 +69,11 @@ def load_fasta_extract_all(fasta: Path, start_residue: int, end_residue: int) ->
         seen.add(sid)
 
         meta = parse_header_robust(r.description)
-        region = extract_region(r.seq.upper(), start_residue, end_residue)
-        if not set(str(region)) - {"-"}:
+        region = extract_region(Seq(sequence), start_residue, end_residue)
+        if not set(str(region)) & AMINO_ACIDS:
             raise ValueError(
-                f"Record {sid} has no residues in the selected window. Check --start and --end."
+                f"Record {sid} has no residues that can be interpreted in the selected window. "
+                "Check --start, --end, and unknown residues."
             )
 
         meta_rows.append(
@@ -61,9 +81,11 @@ def load_fasta_extract_all(fasta: Path, start_residue: int, end_residue: int) ->
                 "record_id": sid,
                 **meta,
                 "original_id": r.id,
-                "input_length": len(r.seq),
-                "padded_residues": max(0, end_residue - len(r.seq)),
+                "input_length": len(sequence),
+                "padded_residues": max(0, end_residue - len(sequence)),
                 "renamed_duplicate": sid != r.id,
+                "normalized_residues": normalized_residues,
+                "terminal_stop_removed": terminal_stop_removed,
             }
         )
         extracted.append(SeqRecord(region, id=sid, description=sid))

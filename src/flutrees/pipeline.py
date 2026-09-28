@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 
 from . import __version__
 from .config import RunConfig
@@ -53,6 +54,7 @@ def run_many(cfg, inputs, outdir, run_id, progress=print):
     root = outdir / run_id
     root.mkdir(parents=True, exist_ok=False)
     links = []
+    write_summary(root / "status.json", {"status": "running", "datasets": names})
     try:
         for i, fasta in enumerate(inputs, 1):
             progress(f"[{i}/{len(inputs)}] {fasta.name}")
@@ -65,10 +67,10 @@ def run_many(cfg, inputs, outdir, run_id, progress=print):
         write_summary(
             root / "status.json", {"status": "complete", "datasets": names, "version": __version__}
         )
-    except Exception as error:
+    except (Exception, KeyboardInterrupt) as error:
         write_summary(
             root / "status.json",
-            {"status": "failed", "error": str(error), "completed_datasets": len(links)},
+            {"status": "failed", "error": str(error) or "Analysis interrupted.", "completed_datasets": len(links)},
         )
         raise
     progress(f"Complete. Open this file: {root.resolve() / 'START_HERE.html'}")
@@ -92,11 +94,23 @@ def run_one(cfg: RunConfig, fasta: Path, run_root: Path, progress=print):
             "summary.json",
             "metadata.tsv",
             "aligned.fasta",
+            "input.fasta",
+            "extracted.fasta",
+            "mafft_input.fasta",
+            "mutations_per_record.tsv",
+            "mutation_counts.tsv",
+            "node_summary.tsv",
+            "node_membership.tsv",
+            "tree_full.svg",
+            "tree_pruned.svg",
+            "tree_full.png",
+            "tree_pruned.png",
+            "run_info.txt",
         )
         if not all((out / name).is_file() and (out / name).stat().st_size > 0 for name in required):
             raise ValueError(f"An output is missing or empty. Results are incomplete: {out}")
-    except Exception as error:
-        write_summary(out / "status.json", {"status": "failed", "error": str(error)})
+    except (Exception, KeyboardInterrupt) as error:
+        write_summary(out / "status.json", {"status": "failed", "error": str(error) or "Analysis interrupted."})
         raise
     artifacts = {p.name: p.stat().st_size for p in out.iterdir() if p.name != "status.json"}
     write_summary(
@@ -107,16 +121,40 @@ def run_one(cfg: RunConfig, fasta: Path, run_root: Path, progress=print):
 
 def _analyze(cfg, fasta, out, progress):
     progress("Reading protein sequences and checking the residue window...")
-    loaded = load_fasta_extract_all(fasta, cfg.start_residue, cfg.end_residue)
+    snapshot = out / "input.fasta"
+    input_bytes = fasta.read_bytes()
+    snapshot.write_bytes(input_bytes)
+    loaded = load_fasta_extract_all(snapshot, cfg.start_residue, cfg.end_residue)
     metadata = loaded["metadata_df"]
     extracted = out / "extracted.fasta"
     SeqIO.write(loaded["extracted_records"], str(extracted), "fasta")
+    # Compact transport IDs avoid MAFFT's header-length limit. Restore public
+    # record IDs and input order before reference selection or interpretation.
+    transport = {
+        f"ft_{i:09d}": rec for i, rec in enumerate(loaded["extracted_records"], 1)
+    }
+    metadata["alignment_id"] = list(transport)
+    mafft_input = out / "mafft_input.fasta"
+    SeqIO.write(
+        [SeqRecord(rec.seq, id=key, description="") for key, rec in transport.items()],
+        str(mafft_input), "fasta",
+    )
     aligned = out / "aligned.fasta"
     progress("Aligning sequences with MAFFT. Large datasets may take several minutes...")
-    mafft_align(extracted, aligned, cfg.mafft, cfg.resolved_threads())
-    aligned_ids = [r.id for r in SeqIO.parse(str(aligned), "fasta")]
-    if sorted(aligned_ids) != sorted(metadata.record_id.tolist()):
+    mafft_align(mafft_input, aligned, cfg.mafft, cfg.resolved_threads())
+    aligned_records = list(SeqIO.parse(str(aligned), "fasta"))
+    if sorted(r.id for r in aligned_records) != sorted(transport):
         raise ValueError("MAFFT output IDs do not match the input records.")
+    by_id = {rec.id: rec for rec in aligned_records}
+    restored = []
+    for key, original in transport.items():
+        rec = by_id[key]
+        if str(rec.seq).replace("-", "") != str(original.seq).replace("-", ""):
+            raise ValueError(f"MAFFT changed or removed residues in record {original.id}. Analysis stopped.")
+        rec.id = original.id
+        rec.description = ""
+        restored.append(rec)
+    SeqIO.write(restored, str(aligned), "fasta")
     ref_id, ref_seq = choose_mode_reference(aligned)
     mutations = call_mutations(aligned, ref_seq, cfg.start_residue)
     counts = mutation_counts(mutations)
@@ -124,6 +162,13 @@ def _analyze(cfg, fasta, out, progress):
     full = build_tree(mutations, cfg.max_depth, cfg.min_split, cfg.min_freq)
     pruned = prune_tree(full, cfg.prune_cutoff)
     warnings = []
+    if metadata.normalized_residues.sum():
+        warnings.append("Input ?, U, and O residues were preserved as X (unknown), without shifting positions. See normalized_residues in Records.")
+    if metadata.terminal_stop_removed.any():
+        warnings.append("Terminal stop markers (*) were removed before extraction. Internal stops are not accepted.")
+    expected_length = cfg.end_residue - cfg.start_residue + 1
+    if len(ref_seq.replace("-", "")) < expected_length:
+        warnings.append("The selected reference is shorter than the requested window. Reference-gap columns are excluded; some positions cannot be compared.")
     incomplete = sum(bool(x) for x in mutations.uncertain_positions)
     if incomplete:
         warnings.append(
@@ -161,7 +206,7 @@ def _analyze(cfg, fasta, out, progress):
         "coordinate_system": "ungapped selected reference residues; window start offset",
         "version": __version__,
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "input_sha256": hashlib.sha256(fasta.read_bytes()).hexdigest(),
+        "input_sha256": hashlib.sha256(input_bytes).hexdigest(),
         "top_mutations": counts.head(25).to_dict(orient="records"),
         "config": asdict(cfg),
         "resolved_threads": cfg.resolved_threads(),

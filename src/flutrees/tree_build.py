@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import ceil
+from decimal import Decimal
 from typing import Any, Dict, Iterator, Optional, Set
 
 import pandas as pd
@@ -54,7 +55,7 @@ def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_fr
         n = node.support
         if n < (2 * min_split):
             return None
-        freq_thresh = max(ceil(min_freq * n), min_split)
+        freq_thresh = max(ceil(Decimal(str(min_freq)) * n), min_split)
 
         best_m = None
         best_w = -1
@@ -127,6 +128,12 @@ def prune_tree(root: Node, prune_cutoff: int) -> Node:
         child = getattr(root, side)
         if child is not None and child.support >= prune_cutoff:
             setattr(out, side, prune_tree(child, prune_cutoff))
+    hidden_records = sum(
+        child.support for child in (root.left, root.right)
+        if child is not None and child.support < prune_cutoff
+    )
+    if hidden_records:
+        out.stop_reason = f"{hidden_records} records hidden by pruning at this node. Use the full tree to see their groups."
     return out
 
 
