@@ -76,6 +76,16 @@ def run_many(cfg, inputs, outdir, run_id, progress=print):
             {"status": "failed", "error": str(error) or "Analysis interrupted.", "completed_datasets": len(links)},
         )
         raise
+    file_count = sum(path.is_file() for path in root.rglob("*"))
+    progress(f"Your output is {file_count} files. Datasets processed: {len(inputs)}.")
+    progress(f"They live at this path: {root.resolve()}")
+    progress("In each dataset folder:")
+    progress("  report.pdf - summary, mutation chart, and visual tree")
+    progress("  tree_full.pdf / tree_pruned.pdf - full and simplified visual trees")
+    progress("  tree_full.txt / tree_pruned.txt - complete plain-text tree traces")
+    progress("  results.xlsx - filterable records, mutations, and group assignments")
+    progress("  PNG / SVG / DOT - presentation images and editable trees")
+    progress("  JSON / TSV / FASTA - underlying data and exact input snapshot")
     progress(f"Complete. Open this file: {root.resolve() / 'START_HERE.html'}")
     return root
 

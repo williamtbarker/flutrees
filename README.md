@@ -107,6 +107,8 @@ Use `flutrees --help` to see all parameters. Input files must have distinct file
 
 Results are in `results/<run ID>/<input filename>/`. On SLURM, the default run ID is `job<SLURM_JOB_ID>`, and the thread count uses `SLURM_CPUS_PER_TASK` when available. Reusing the same job/run ID requires a different `--run-id`.
 
+The CLI shows each processing stage and finishes with the exact number of files created, dataset count, absolute results-folder path, key output filenames and their purposes, and the `START_HERE.html` file to open first.
+
 ## Interpreting the science
 
 - **This is a mutation decision tree, not a phylogenetic reconstruction.** A branch partitions records by presence of a called amino-acid substitution. Counts are sequence records, including duplicate sequences, not confidence or bootstrap support.

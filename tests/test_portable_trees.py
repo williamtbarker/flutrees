@@ -103,3 +103,23 @@ def test_new_exports_and_workbook_groups_agree(tmp_path, cfg, fasta):
     for name in ["tree_full.txt", "tree_pruned.txt", "tree_full.dot", "tree_pruned.dot", "group_assignments.tsv"]:
         assert manifest["artifacts"][name] > 0
     assert "full_group_id" in (out / "START_HERE.html").read_text()
+
+
+def test_cli_reports_actual_file_count_paths_and_output_guide(tmp_path, fasta, fake_mafft):
+    from typer.testing import CliRunner
+    from flutrees.cli import app
+
+    result = CliRunner().invoke(app, [
+        "-i", str(fasta), "--mafft", fake_mafft, "--start", "1", "--end", "6",
+        "--outdir", str(tmp_path / "outputs"), "--run-id", "acceptance",
+    ])
+    assert result.exit_code == 0, result.output
+    root = tmp_path / "outputs" / "acceptance"
+    files = [p for p in root.rglob("*") if p.is_file()]
+    assert f"Your output is {len(files)} files. Datasets processed: 1." in result.output
+    assert f"They live at this path: {root.resolve()}" in result.output
+    assert f"Complete. Open this file: {root.resolve() / 'START_HERE.html'}" in result.output
+    for filename in ["report.pdf", "results.xlsx", "tree_full.pdf", "tree_pruned.pdf", "tree_full.txt", "tree_pruned.txt"]:
+        assert filename in result.output
+    for stage in ["Reading protein", "Aligning sequences", "Building visual trees"]:
+        assert stage in result.output

@@ -6,6 +6,7 @@
 - Added editable Graphviz DOT trees, preserving topology without inventing evolutionary branch lengths. Graphviz is optional for users.
 - Added one full-tree terminal-group assignment per record, exported as TSV and directly in Excel Records with group size and complete decision path.
 - Linked the new outputs from the offline report and included them in the completion gate.
+- Made CLI completion explicit: exact output file count, dataset count, absolute results path, key filenames and purposes, and the first file to open.
 - Added portable-export tests, native Graphviz rendering in CI, and a short manual acceptance-test guide. Retained exact 100% statement and branch coverage.
 
 ## 0.2.1 — 2026-09-28

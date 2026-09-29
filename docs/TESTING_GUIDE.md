@@ -57,7 +57,7 @@ Use translated, unaligned proteins with consistent starting positions. Existing 
 
 ## 4. What a successful test looks like
 
-- The run ends with **Complete**, and its status file says `complete`.
+- The run ends with **Complete**, states **Your output is X files**, gives the absolute folder path and key output filenames, and its status file says `complete`.
 - `report.pdf` contains the summary, mutation chart, and a branching tree diagram.
 - `tree_full.pdf` and `tree_pruned.pdf` show readable nodes and edges. Large trees continue onto numbered pages.
 - `tree_full.txt` traces every node with indentation; the simplified trace explains hidden groups.
