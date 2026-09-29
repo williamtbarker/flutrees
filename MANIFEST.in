@@ -3,3 +3,4 @@ include install_mafft.sh
 recursive-include tests *.py *.fasta *.json *.md
 recursive-include docs *.md *.html
 include CITATION.cff
+recursive-include benchmarks *.py

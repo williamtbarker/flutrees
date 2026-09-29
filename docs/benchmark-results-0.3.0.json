@@ -1,0 +1,116 @@
+{
+  "version": "0.3.0",
+  "python": "3.13.5",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "scope": "Tree construction only: 12 synthetic binary sites; depth 6; min_split 5; min_freq 0.05; no unknowns. Excludes MAFFT and exports.",
+  "results": [
+    {
+      "records": 100,
+      "mode": "frequency",
+      "seconds": 0.003084,
+      "nodes": 31
+    },
+    {
+      "records": 100,
+      "mode": "balanced",
+      "seconds": 0.00267,
+      "nodes": 33
+    },
+    {
+      "records": 100,
+      "mode": "diversity",
+      "seconds": 0.004335,
+      "nodes": 33
+    },
+    {
+      "records": 500,
+      "mode": "frequency",
+      "seconds": 0.012017,
+      "nodes": 109
+    },
+    {
+      "records": 500,
+      "mode": "balanced",
+      "seconds": 0.012837,
+      "nodes": 125
+    },
+    {
+      "records": 500,
+      "mode": "diversity",
+      "seconds": 0.019045,
+      "nodes": 85
+    },
+    {
+      "records": 1000,
+      "mode": "frequency",
+      "seconds": 0.022688,
+      "nodes": 127
+    },
+    {
+      "records": 1000,
+      "mode": "balanced",
+      "seconds": 0.036287,
+      "nodes": 127
+    },
+    {
+      "records": 1000,
+      "mode": "diversity",
+      "seconds": 0.04889,
+      "nodes": 113
+    },
+    {
+      "records": 5000,
+      "mode": "frequency",
+      "seconds": 0.180794,
+      "nodes": 127
+    },
+    {
+      "records": 5000,
+      "mode": "balanced",
+      "seconds": 0.13175,
+      "nodes": 127
+    },
+    {
+      "records": 5000,
+      "mode": "diversity",
+      "seconds": 0.227865,
+      "nodes": 127
+    },
+    {
+      "records": 10000,
+      "mode": "frequency",
+      "seconds": 0.239966,
+      "nodes": 127
+    },
+    {
+      "records": 10000,
+      "mode": "balanced",
+      "seconds": 0.265256,
+      "nodes": 127
+    },
+    {
+      "records": 10000,
+      "mode": "diversity",
+      "seconds": 0.357471,
+      "nodes": 127
+    },
+    {
+      "records": 25000,
+      "mode": "frequency",
+      "seconds": 0.695143,
+      "nodes": 127
+    },
+    {
+      "records": 25000,
+      "mode": "balanced",
+      "seconds": 0.655023,
+      "nodes": 127
+    },
+    {
+      "records": 25000,
+      "mode": "diversity",
+      "seconds": 0.88379,
+      "nodes": 127
+    }
+  ]
+}

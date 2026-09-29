@@ -33,8 +33,8 @@ jobs:
           /tmp/flutrees-wheel/bin/pip install dist/*.whl
           cd /tmp
           /tmp/flutrees-wheel/bin/flutrees --version
-          /tmp/flutrees-wheel/bin/flutrees --demo --threads 1 --outdir /tmp/flutrees-example --run-id demo
-          /tmp/flutrees-wheel/bin/flutrees -i "$GITHUB_WORKSPACE/tests/data/public_HA.fasta" --threads 1 --outdir /tmp/flutrees-example --run-id public
+          /tmp/flutrees-wheel/bin/flutrees --demo --tree-mode all --threads 1 --outdir /tmp/flutrees-example --run-id demo
+          /tmp/flutrees-wheel/bin/flutrees -i "$GITHUB_WORKSPACE/tests/data/public_HA.fasta" --tree-mode all --threads 1 --outdir /tmp/flutrees-example --run-id public
       - name: Collect validation files
         run: |
           mkdir -p validation/dist validation/examples/synthetic validation/examples/public
@@ -56,11 +56,41 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y mafft
       - run: python -m pip install -e '.[dev]' playwright
       - run: python -m playwright install --with-deps chromium
-      - run: flutrees --demo --threads 1 --outdir /tmp/browser-run --run-id demo
+      - run: flutrees --demo --tree-mode all --threads 1 --outdir /tmp/browser-run --run-id demo
       - run: python tests/browser_check.py /tmp/browser-run/demo/example/START_HERE.html
 
+  installers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update && sudo apt-get install -y mafft
+      - run: python -m pip install uv build
+      - run: python -m build
+      - name: Verify uv environment
+        run: |
+          uv venv --python 3.11 /tmp/flutrees-uv
+          uv pip install --python /tmp/flutrees-uv/bin/python dist/*.whl
+          cd /tmp
+          /tmp/flutrees-uv/bin/flutrees --demo --tree-mode all --threads 1 --outdir /tmp/uv-results --run-id demo
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: flutrees
+          python-version: "3.11"
+          channels: conda-forge,bioconda
+          conda-remove-defaults: true
+      - name: Verify conda environment
+        shell: bash -el {0}
+        run: |
+          conda install --override-channels -c conda-forge -c bioconda --strict-channel-priority mafft tk pip -y
+          python -m pip install dist/*.whl
+          cd /tmp
+          flutrees --demo --tree-mode all --threads 1 --outdir /tmp/conda-results --run-id demo
+
   package:
-    needs: [test, browser]
+    needs: [test, browser, installers]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.package.outputs.version }}
@@ -123,6 +153,10 @@ jobs:
           shutil.copy2("tests/data/README.md", kit / "example_inputs/PUBLIC_DATA_PROVENANCE.md")
           for source in ("README.md", "CHANGELOG.md", "LICENSE", "CITATION.cff", "docs/TESTING_GUIDE.md", "docs/RELEASE_NOTES.md"):
               shutil.copy2(source, kit / Path(source).name)
+          (kit / "docs").mkdir()
+          for source in Path("docs").iterdir():
+              if source.suffix in {".md", ".json"}:
+                  shutil.copy2(source, kit / "docs" / source.name)
           shutil.copy2("validation/coverage.json", kit / "validation/coverage-python311.json")
           shutil.copy2("docs/RELEASE_START.html", kit / "START_HERE.html")
           guide = html.escape((kit / "TESTING_GUIDE.md").read_text())

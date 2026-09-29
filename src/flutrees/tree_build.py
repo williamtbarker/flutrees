@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import ceil
-from decimal import Decimal
 from typing import Any, Dict, Iterator, Optional, Set
 
 import pandas as pd
+
+from .strategies import SplitSelector
 
 
 @dataclass
@@ -21,7 +21,7 @@ class Node:
     stop_reason: str = ""
 
 
-def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_freq: float) -> Node:
+def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_freq: float, strategy: str = "frequency") -> Node:
     """
     mutation_df: columns record_id, mutations(list[str])
     """
@@ -51,36 +51,14 @@ def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_fr
     )
     next_id += 1
 
-    def pick_split(node: Node) -> Optional[str]:
-        n = node.support
-        if n < (2 * min_split):
-            return None
-        freq_thresh = max(ceil(Decimal(str(min_freq)) * n), min_split)
-
-        best_m = None
-        best_w = -1
-        for m, have_ids in mut_to_ids.items():
-            if m in node.used:
-                continue
-            if node.seqs & unknown.get(int(m[1:-1]), set()):
-                continue
-            have = node.seqs & have_ids
-            w = len(have)
-            if w < freq_thresh:
-                continue
-            if (n - w) < freq_thresh:
-                continue
-            if w > best_w:
-                best_w = w
-                best_m = m
-        return best_m
+    selector = SplitSelector(mut_to_ids, unknown, min_split, min_freq, strategy)
 
     def rec(node: Node):
         nonlocal next_id
         if node.depth >= max_depth:
             node.stop_reason = "Maximum depth reached."
             return
-        m = pick_split(node)
+        m = selector.choose(node.seqs, node.used)
         if m is None:
             node.stop_reason = "No eligible split: counts, frequency, or incomplete observations limit subdivision."
             return

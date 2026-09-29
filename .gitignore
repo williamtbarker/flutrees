@@ -19,3 +19,5 @@ recovery/
 coverage.json
 coverage.xml
 htmlcov/
+.hypothesis/
+benchmark.json

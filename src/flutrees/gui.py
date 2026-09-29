@@ -17,8 +17,8 @@ class Launcher:
         self.running = False
         self.events = queue.Queue()
         root.title("FluTrees")
-        root.geometry("800x600")
-        root.minsize(760, 580)
+        root.geometry("860x740")
+        root.minsize(800, 700)
         root.protocol("WM_DELETE_WINDOW", self.close)
         frame = ttk.Frame(root, padding=24)
         frame.pack(fill="both", expand=True)
@@ -53,6 +53,17 @@ class Launcher:
             text="Use amino-acid HA sequences with consistent numbering. The default window is 84–284 inclusive.",
             wraplength=690,
         ).pack(anchor="w")
+        modes = ttk.Frame(frame)
+        modes.pack(anchor="w", pady=8)
+        ttk.Label(modes, text="Tree view").pack(side="left", padx=5)
+        self.tree_mode = tk.StringVar(value="frequency")
+        ttk.Combobox(modes, textvariable=self.tree_mode, state="readonly", width=18,
+                     values=("frequency", "balanced", "diversity", "all")).pack(side="left")
+        ttk.Label(modes, text="Reference ID (optional)").pack(side="left", padx=8)
+        self.reference_id = tk.StringVar(value="")
+        ttk.Entry(modes, textvariable=self.reference_id, width=28).pack(side="left")
+        ttk.Label(frame, text="Frequency preserves the legacy split rule. All generates three views from one alignment.",
+                  wraplength=740).pack(anchor="w")
         self.analyze_button = ttk.Button(frame, text="Analyze sequences", command=self.analyze)
         self.analyze_button.pack(anchor="w", pady=12)
         self.status = tk.StringVar(
@@ -98,7 +109,8 @@ class Launcher:
                 raise ValueError("Choose at least one FASTA file, or use the included example.")
             if not self.outdir.get().strip():
                 raise ValueError("Choose a results folder.")
-            cfg = RunConfig(start_residue=int(self.start.get()), end_residue=int(self.end.get()))
+            cfg = RunConfig(start_residue=int(self.start.get()), end_residue=int(self.end.get()),
+                            tree_mode=self.tree_mode.get(), reference_id=self.reference_id.get().strip() or None)
         except ValueError as error:
             self.dialogs[1].showerror("Check your input", str(error))
             return

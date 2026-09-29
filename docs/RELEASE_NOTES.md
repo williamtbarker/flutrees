@@ -1,28 +1,30 @@
-# FluTrees 0.2.3
+# FluTrees 0.3.0
 
-FluTrees converts influenza HA protein FASTA files into mutation decision trees, reports, and tables for sequence review.
+Three complementary mutation-tree views from one HA alignment, with the original frequency split rule retained as the default.
 
 ## Download and start
 
-Download `FluTrees_v0.2.3_Test_Kit.zip`, extract it, and open `START_HERE.html`. It includes an installable Python wheel, example inputs, complete example outputs, and installation instructions. Python 3.9 or newer and MAFFT are required to run an analysis; neither is bundled. The example reports can be viewed without installing FluTrees.
+Download `FluTrees_v0.3.0_Test_Kit.zip`, extract it, and open `START_HERE.html`. The kit includes the installable wheel, synthetic and public HA inputs, complete three-view example results, validation records, and checksums. Python 3.9 or newer and MAFFT are required for new analyses; neither is bundled. Existing reports can be viewed without installing FluTrees.
 
-The wheel and source archive are also available separately. `SHA256SUMS.txt` lists the release asset checksums.
+The wheel, source archive, example tree PDF, and `SHA256SUMS.txt` are also available separately. The README includes complete venv/pip, conda/Miniconda, and uv installation and run examples.
 
-## Included features
+## Tree views
 
-- Desktop file selection and progress display, plus the existing command-line workflow.
-- A PDF report and full/simplified tree PDFs, with continuation pages for larger trees.
-- Plain-text tree traces, PNG images, editable SVG figures, and Graphviz DOT files.
-- An offline expandable HTML report and a seven-sheet Excel workbook with record-level group assignments.
-- JSON, TSV, and FASTA exports, input snapshots, parameters, and completion/failure records.
-- CLI completion messages stating the file count, absolute results path, output filenames, and the first file to open.
+- **Frequency (Mode A, default):** retain the legacy most-prevalent eligible substitution rule and encounter-order tie handling.
+- **Balanced (Mode B):** favor the most even eligible split.
+- **Diversity (Mode C):** favor reduction in residue entropy at other completely observed positions, excluding the candidate's own site and its other alleles.
+- **All:** `--tree-mode all` builds every view from the same alignment, reference, mutation calls, and uncertainty observations.
 
-## Changes in 0.2.3
+Each view has full and simplified PDF/PNG/SVG/DOT/JSON/text trees and record-level assignments. HTML and Excel expose cross-view comparisons. Root-level filenames remain available and mirror the primary view: frequency for `all`, otherwise the selected mode. Node and group IDs must be interpreted with their mode.
 
-Updated installation and testing instructions, desktop labels, version metadata, and release packaging. Analysis behavior is unchanged from 0.2.2. See `CHANGELOG.md` for the scientific corrections introduced in 0.2.0 and 0.2.1, which can change mutation labels or groups compared with 0.1.0.
+## Hardening and usability
 
-## Verification and interpretation
+`--reference-id` selects one unique original FASTA ID; modal reference selection remains the default. MAFFT uses `--threadit 0` by default to avoid multithreaded iterative-refinement variation; `--legacy-alignment` restores the previous flags. Provenance includes software versions, the exact alignment command, content checksums, and an analysis fingerprint. Unsafe output names are normalized with collision checks. Completion requires every requested view and continuation image.
 
-Release publication requires the test suite, exact 100% statement and branch coverage of `src/flutrees`, real MAFFT and desktop checks, Chromium report checks, native Graphviz rendering, and clean-wheel example runs. CI runs on Linux with Python 3.9, 3.11, and 3.13. Native Windows/macOS installation is not covered by that matrix.
+The desktop window includes tree-view and reference controls. The CLI reports selected modes, file count, absolute output location, and which report to open. Existing input-integrity, uncertainty, snapshot, and failure-reporting protections remain in place.
 
-These are mutation decision trees, not phylogenies. Verify the input residue window, selected reference, numbering convention, and quality notes before interpreting laboratory data. The bundled synthetic and public HA datasets are software test fixtures.
+## Validation and interpretation
+
+Release publication is gated on Linux tests for Python 3.9, 3.11, and 3.13; exact 100% application statement and branch coverage; legacy golden outputs; independent strategy oracles and property tests; real MAFFT and desktop checks; Chromium and Graphviz checks; and fresh-wheel example runs. Benchmark scope and limitations are documented in `docs/VALIDATION_0.3.0.md`.
+
+These are exploratory mutation decision trees, not phylogenies, confidence estimates, or clinical interpretations. The frequency split rule is unchanged for identical mutation observations; altered alignment settings, references, inputs, or software versions can change upstream observations. Native Windows/macOS desktop installation and large-scale end-to-end surveillance workloads are not certified by this release.

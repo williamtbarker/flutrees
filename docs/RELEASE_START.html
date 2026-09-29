@@ -9,23 +9,24 @@ section{background:white;border:1px solid #d7e0e7;border-radius:8px;padding:22px
 a{color:#075e72}code{background:#edf3f5;padding:2px 5px}table{border-collapse:collapse;width:100%}td,th{padding:9px;border-bottom:1px solid #d7e0e7;text-align:left}
 </style>
 <h1>FluTrees test kit</h1>
-<p>Example reports, installation files, and test instructions.</p>
+<p>Version 0.3.0: three-view example reports, installation files, and test instructions.</p>
 <section>
 <h2>1. Preview the results</h2>
 <p>Open the <a href="examples/synthetic/example/START_HERE.html">synthetic example</a> or the <a href="examples/public/public_HA/START_HERE.html">public HA example</a>. No installation is needed to view these reports. Keep this folder together so its links work.</p>
 <table>
 <tr><th>Output</th><th>Synthetic example</th></tr>
 <tr><td>Summary and visual tree</td><td><a href="examples/synthetic/example/report.pdf">PDF report</a></td></tr>
-<tr><td>Complete tree</td><td><a href="examples/synthetic/example/tree_full.pdf">Tree PDF</a> / <a href="examples/synthetic/example/tree_full.txt">Plain-text trace</a></td></tr>
+<tr><td>Primary frequency tree</td><td><a href="examples/synthetic/example/tree_full.pdf">Tree PDF</a> / <a href="examples/synthetic/example/tree_full.txt">Plain-text trace</a></td></tr>
 <tr><td>Filterable records and groups</td><td><a href="examples/synthetic/example/results.xlsx">Excel workbook</a></td></tr>
 <tr><td>Editable figures</td><td><a href="examples/synthetic/example/tree_full.svg">SVG</a> / <a href="examples/synthetic/example/tree_full.dot">Graphviz DOT</a></td></tr>
+<tr><td>Alternative trees</td><td><a href="examples/synthetic/example/trees/balanced/tree_full.pdf">Balanced PDF</a> / <a href="examples/synthetic/example/trees/diversity/tree_full.pdf">Diversity PDF</a></td></tr>
 </table>
 <p>The synthetic example has 48 records in four groups of 12. Its mutation counts are 12, 12, and 24. The public HA fixture contains 24 records; source details and expected counts are in <code>example_inputs</code>.</p>
 </section>
 <section>
 <h2>2. Install and run</h2>
 <p>Follow the <a href="TESTING_GUIDE.html">installation and testing guide</a>. The installable wheel is in <code>package</code>. Python 3.9 or newer and MAFFT are required; Python dependencies are downloaded during installation. MAFFT is installed separately.</p>
-<p>After installation, use <code>flutrees --demo --open</code> for the included example, or <code>flutrees --gui</code> for desktop file selection. The desktop window requires Python with Tk support.</p>
+<p>After installation, use <code>flutrees --demo --tree-mode all --open</code> for the included example, or <code>flutrees --gui</code> for desktop file selection. The desktop window requires Python with Tk support.</p>
 </section>
 <section>
 <h2>3. Check an analysis</h2>

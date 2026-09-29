@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "flutrees"
-version = "0.2.3"
+version = "0.3.0"
 description = "Toolkit for interpretable influenza HA mutation-tree analysis"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -36,6 +36,7 @@ dev = [
   "pypdf>=5",
   "openpyxl>=3.1",
   "beautifulsoup4>=4.12",
+  "hypothesis>=6.100",
 ]
 
 [project.scripts]
