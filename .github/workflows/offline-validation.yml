@@ -1,0 +1,30 @@
+name: Offline validation environment
+on:
+  push:
+    branches: [maintenance/offline-validation-030]
+permissions:
+  contents: read
+jobs:
+  environment:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: |
+          mkdir -p bundle/wheels bundle/debs
+          python -m pip download hypothesis ruff build sortedcontainers packaging pyproject-hooks -d bundle/wheels
+          sudo apt-get update
+          cd bundle/debs
+          apt-get download mafft
+      - run: |
+          git bundle create bundle/repository.bundle --all
+          tar --exclude=.git --exclude=bundle -czf bundle/source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: offline-validation-environment
+          path: bundle/
+          retention-days: 2
