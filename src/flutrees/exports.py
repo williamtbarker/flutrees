@@ -70,7 +70,7 @@ def write_text_tree(outpath, tree, summary, view):
 
 
 def write_dot_tree(outpath, tree):
-    """Editable topology without invented evolutionary branch lengths."""
+    """Export decision-tree nodes and edges in Graphviz DOT format."""
     lines = [
         "digraph FluTrees {",
         '  graph [rankdir=LR, label="Mutation decision tree - record counts, not confidence", labelloc=t];',

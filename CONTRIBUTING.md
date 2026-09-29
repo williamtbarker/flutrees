@@ -26,3 +26,13 @@ Software correctness and scientific validity should be treated as related but di
 ## Scope
 
 Please keep contributions focused. Large changes are easier to review when discussed in an issue before implementation.
+
+## Documentation
+
+Write documentation for anyone using the package. Describe current behavior, reproducible steps, and relevant limitations. Keep personal correspondence, development-session notes, and unfinished planning out of public documentation and code comments.
+
+## Releases
+
+Update the version in `pyproject.toml`, `src/flutrees/__init__.py`, `CITATION.cff`, the CLI version test, and the installation guide. Update `CHANGELOG.md`, `docs/RELEASE_NOTES.md`, and the citation release date. CI checks version consistency and builds the release downloads on each branch.
+
+Run the full CI suite on the proposed commit before moving it to main. After all tests and packaging checks pass on main, CI publishes a new version as a GitHub release with a wheel, source archive, test kit, example PDF, and checksums. Existing releases are left unchanged. Only the publication job has repository write permission.

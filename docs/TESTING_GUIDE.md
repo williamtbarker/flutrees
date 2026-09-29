@@ -1,4 +1,4 @@
-# FluTrees 0.2.2: your first test
+# FluTrees 0.2.3: installation and testing
 
 Start with the included example, then try one small protein FASTA you know well.
 
@@ -26,16 +26,16 @@ For the downloaded test kit, run these commands after opening Terminal in the ex
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install package/flutrees-0.2.2-py3-none-any.whl
+python -m pip install package/flutrees-0.2.3-py3-none-any.whl
 flutrees --version
 flutrees --demo --open
 ```
 
-The version should be **0.2.2**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
+The version should be **0.2.3**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
 
 If working from a GitHub source download instead, run `python -m pip install .` from its project folder in place of the wheel-install command. The other commands are the same.
 
-On Windows, use `py -m venv .venv` and `.venv\Scripts\activate` in Command Prompt, then the same `python -m pip` and `flutrees` commands. Install a compatible MAFFT executable and add it to PATH. Linux CI is verified; native Windows/macOS installation is the remaining real-machine acceptance check.
+On Windows, use `py -m venv .venv` and `.venv\Scripts\activate` in Command Prompt, then the same `python -m pip` and `flutrees` commands. Install a compatible MAFFT executable and add it to PATH. Automated installation tests run on Linux; check the example on Windows or macOS before analyzing laboratory data.
 
 ## 3. Test the desktop window and your own data
 
@@ -72,4 +72,4 @@ The first PNG/SVG is the overview; `_page_002` and later files contain continuat
 
 Keep the results folder. Share the exact message, installed version, operating system, and the relevant `status.json` or `mafft.log`. For a visual problem, a screenshot of the affected page helps. Use a non-confidential example when sharing inputs or outputs.
 
-After the example and one familiar real dataset behave as expected on your computer, the useful next step is your former manager trying the same short workflow. Note where they hesitate: file selection, window choice, finding the PDF, or filtering Excel. Those observations are more useful than adding further features before a real user tries it.
+When reporting a usability problem, identify the step involved: selecting files, choosing the residue window, opening a PDF, or filtering records in Excel. Include the expected behavior and what happened instead.

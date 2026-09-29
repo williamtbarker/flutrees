@@ -7,7 +7,7 @@ runner = CliRunner()
 
 
 def test_version_help_no_inputs_and_modes(monkeypatch, fasta):
-    assert "0.2.2" in runner.invoke(app, ["--version"]).stdout
+    assert "0.2.3" in runner.invoke(app, ["--version"]).stdout
     assert runner.invoke(app, ["--help"]).exit_code == 0
     result = runner.invoke(app, [])
     assert result.exit_code == 2 and "--gui" in result.stdout

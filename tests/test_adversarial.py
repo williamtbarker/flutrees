@@ -1,4 +1,4 @@
-"""Regressions from deliberately hostile and scientifically misleading inputs."""
+"""Regressions for malformed inputs and scientific edge cases."""
 
 import json
 import hashlib

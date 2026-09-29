@@ -1,4 +1,4 @@
-"""Small desktop launcher; analysis stays in the same tested pipeline."""
+"""Desktop file selection and progress display for the analysis pipeline."""
 
 import queue
 import threading
@@ -24,7 +24,7 @@ class Launcher:
         frame.pack(fill="both", expand=True)
         ttk.Label(
             frame,
-            text="Protein sequences to clear, usable results",
+            text="Influenza HA mutation trees",
             font=("TkDefaultFont", 17, "bold"),
         ).pack(anchor="w")
         ttk.Label(

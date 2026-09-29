@@ -38,7 +38,7 @@ body:
     id: version
     attributes:
       label: Version or commit
-      placeholder: v0.1.0 or commit SHA
+      placeholder: Output of flutrees --version, or commit SHA
     validations:
       required: true
 
@@ -46,6 +46,6 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Operating system, Python/Rust version, and other relevant runtime information.
+      description: Operating system, Python version, MAFFT version, and whether the desktop window or command line was used.
     validations:
       required: false

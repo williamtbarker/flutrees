@@ -7,7 +7,7 @@ FluTrees organizes influenza HA protein sequences into interpretable mutation de
 
 **Choose protein FASTA files, run the analysis, and open `START_HERE.html`.** Each run produces visual trees, a PDF report, an Excel workbook, and the underlying sequence and analysis files. Your data stays on your computer.
 
-## For scientists: the easiest way to use it
+## Desktop workflow
 
 After the one-time installation below, launch the desktop window:
 
@@ -57,6 +57,8 @@ For intermediate nodes, filter Node Membership by `view` (`full` or `pruned`) an
 For a first run on your own computer, follow the [short acceptance-test guide](docs/TESTING_GUIDE.md).
 
 ## One-time installation
+
+Download the **Test Kit ZIP** from the [latest release](https://github.com/williamtbarker/flutrees/releases/latest) for an installable wheel, example inputs, complete example reports, and an installation guide. Unzip it and open `START_HERE.html` to preview the reports before installing. Python and MAFFT are required to run a new analysis.
 
 Requires Python 3.9 or newer and [MAFFT](https://mafft.cbrc.jp/alignment/software/). Install in a virtual environment:
 
@@ -156,7 +158,7 @@ python -m build
 
 CI enforces **100% statement and branch coverage of every module in `src/flutrees`**, including the CLI, desktop launcher, reporting, and error handling. Third-party MAFFT, Python/Tk, spreadsheet libraries, and the existing operating-system installation helper are outside the Python package coverage denominator.
 
-Coverage is supplemented with real MAFFT runs, a real desktop example under Xvfb, a Chromium check of the offline report, workbook and PDF content assertions, graphical layout checks, input/error regressions, and a clean wheel installation. CI exercises Python 3.9, 3.11, and 3.13 on Linux. Native Windows/macOS desktop installation has not been certified by this CI matrix.
+Coverage is supplemented with real MAFFT runs, a desktop example under Xvfb, a Chromium check of the offline report, workbook and PDF content assertions, graphical layout checks, input/error regressions, and a clean wheel installation. CI exercises Python 3.9, 3.11, and 3.13 on Linux. Native Windows/macOS desktop installation is not covered by this CI matrix.
 
 Tests marked `integration` require MAFFT; `gui` requires a display. CI provides both and executes them. Chromium is installed for the separate browser job. The included synthetic example is bundled in both wheel and source distributions.
 
