@@ -1,0 +1,19 @@
+{
+  "source_commit": "5683105e015e19ccaa5744789de9ad8941331975",
+  "version": "0.2.3",
+  "files": {
+    "flutrees/__init__.py": "f09aa6a9c62b54c55a537a0b9ced7b0c54da5975eaeea09bfad47ef24c24a2ac",
+    "flutrees/__main__.py": "41df9ff33d90dafa6210fdb1e8f045b09ae900258357114a424f36d0c845987a",
+    "flutrees/align_mafft.py": "b5ac3e38e88843d118574da0f13fdfd7608605905cdc6382319891f14e298d40",
+    "flutrees/cli.py": "476cc7e6d23fe5932e8746284b5635b38d33e57a810901b3087390744448ac64",
+    "flutrees/config.py": "8e344c5bd5ea26058eb3a395bd0ef19c6daf8089a4ecddb2dab268e8c3bc52aa",
+    "flutrees/exports.py": "375f414d5ccf1c0665cdf66c8a9294ace01bd25f8277df1920d95a50681322a1",
+    "flutrees/figures.py": "95bee4079a1ff94b95c1eb8c05ebbcaf645b626e0a8d7069bc37e5577a088df2",
+    "flutrees/gui.py": "869a4f765241d262374362568695053ad1833e86215bd17e8c0026083e0f8ae3",
+    "flutrees/io_fasta.py": "26a97302173e42dd3f063cfd69426e767e312f116b95a7ccd104673b5c042e56",
+    "flutrees/metadata.py": "9fa78bfc014df9581a430dc52603af1f1c2b48c69b0e4d57247ad6233e0bfb91",
+    "flutrees/mutations.py": "02450f35abe61d830f753e4b182275143d3965fd918ed9f7b25e9b589f1bf8eb",
+    "flutrees/pipeline.py": "51163369f5d07c0da3bd86c4c3856a6ab542bdef17803c07c606669a59674622",
+    "flutrees/tree_build.py": "ccee90002dc4f9a20b989c9a0a1d2b8ea17cc5716831f17d4d3e72b0c12facc6"
+  }
+}

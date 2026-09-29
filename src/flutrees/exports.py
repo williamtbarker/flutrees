@@ -12,6 +12,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from .tree_build import to_dict, iter_nodes
 from .strategies import DESCRIPTIONS
 
+EXCEL_DATA_ROWS = 1_048_575  # Excel row limit minus the header.
+
+
 METHOD = (
     "Mutation decision tree, not a phylogeny. Counts represent sequence records, including duplicates. "
     "Reference: most common aligned sequence; ties use first input occurrence. Positions count ungapped "
@@ -176,6 +179,7 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned, 
             "Filter Records by full_group_id to select a final group; full_group_path traces every decision. Node Membership also includes intermediate groups.",
         ),
         ("Interpretation", method_text(summary)),
+        ("Large tables", "Tables exceeding one worksheet continue on numbered sheets. No records are dropped."),
     ]
     sheets = {
         "Summary": pd.DataFrame(summary_rows, columns=["Item", "Value"]),
@@ -195,28 +199,33 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned, 
     ) as writer:
         wrap = writer.book.add_format({"text_wrap": True, "valign": "top"})
         for name, df in sheets.items():
-            df.to_excel(writer, sheet_name=name, index=False)
-            ws = writer.sheets[name]
-            ws.freeze_panes(1, 0)
-            ws.set_column(0, len(df.columns) - 1, 24)
-            if not df.empty:
-                ws.add_table(
-                    0,
-                    0,
-                    len(df),
-                    len(df.columns) - 1,
-                    {
-                        "columns": [{"header": c} for c in df.columns],
-                        "style": "Table Style Medium 2",
-                    },
-                )
-            if name in {"Summary", "QC"}:
-                ws.set_column(len(df.columns) - 1, len(df.columns) - 1, 105, wrap)
-                ws.set_default_row(60)
-            if name == "Records":
-                ws.set_column(3, 3, 70, wrap)
-            if name == "Summary":
-                ws.set_row(6, 135)
+            for column in df.select_dtypes(include=["object", "string"]):
+                if df[column].astype(str).str.len().gt(32_767).any():
+                    raise ValueError(
+                        f"Excel cell limit exceeded in {name}, column {column}. "
+                        "A value is longer than 32,767 characters; shorten the input header or window. "
+                        "Complete values remain in the diagnostic TSV files."
+                    )
+            for number, start in enumerate(range(0, max(1, len(df)), EXCEL_DATA_ROWS), 1):
+                suffix = f" ({number})" if number > 1 else ""
+                sheet_name = name[:31 - len(suffix)] + suffix
+                part = df.iloc[start:start + EXCEL_DATA_ROWS]
+                part.to_excel(writer, sheet_name=sheet_name, index=False)
+                ws = writer.sheets[sheet_name]
+                ws.freeze_panes(1, 0)
+                ws.set_column(0, len(df.columns) - 1, 24)
+                if not part.empty:
+                    ws.add_table(
+                        0, 0, len(part), len(df.columns) - 1,
+                        {"columns": [{"header": c} for c in df.columns], "style": "Table Style Medium 2"},
+                    )
+                if name in {"Summary", "QC"}:
+                    ws.set_column(len(df.columns) - 1, len(df.columns) - 1, 105, wrap)
+                    ws.set_default_row(60)
+                if name == "Records":
+                    ws.set_column(3, 3, 70, wrap)
+                if name == "Summary":
+                    ws.set_row(6, 135)
 
 
 def write_pdf(pdf_path, summary, mut_counts, tree_pruned, family=None):

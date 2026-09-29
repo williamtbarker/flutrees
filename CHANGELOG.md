@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 - 2026-09-29
+
+- Restore the historical alignment flag set for default frequency-only runs; use reproducible refinement by default for alternative/all views and record the effective override.
+- Add validated JSON tree loading, reconstructed path state, and full/pruned round-trip acceptance.
+- Continue oversized Excel tables across numbered sheets and explicitly reject cell values that Excel would truncate.
+- Expand strategy property tests to 5,000 datasets, add twelve end-to-end comparisons against immutable v0.2.3 source, and exercise the physical Excel row boundary.
+- Gate releases on six complete HA alignment/report workloads through 25,000 records, eighteen repeated alignment-profile measurements, and verbatim README venv/Miniconda/uv bootstrap tests.
+- Include completed acceptance evidence and updated installation/validation documentation in the Test Kit. Preserve existing published releases.
+
 ## 0.3.0 - 2026-09-29
 
 ### Added

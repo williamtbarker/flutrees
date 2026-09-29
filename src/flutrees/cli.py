@@ -59,11 +59,14 @@ def run(
     tree_mode: str = typer.Option(
         "frequency", "--tree-mode", help="Tree view: frequency (legacy), balanced, diversity, or all. Aligns once."
     ),
+    reference: Optional[str] = typer.Option(
+        None, "--reference", help="Use auto for the modal reference; do not combine with --reference-id."
+    ),
     reference_id: Optional[str] = typer.Option(
         None, "--reference-id", help="Use exactly one matching original FASTA ID; default is the modal sequence."
     ),
-    reproducible: bool = typer.Option(
-        True, "--reproducible/--legacy-alignment", help="Disable multithreaded iterative refinement; legacy option restores older MAFFT flags."
+    reproducible: Optional[bool] = typer.Option(
+        None, "--reproducible/--legacy-alignment", help="Alignment flags: frequency alone defaults to legacy; other views default to reproducible. Override either default explicitly."
     ),
     demo: bool = typer.Option(False, "--demo", help="Run the included synthetic protein example"),
     open_results: bool = typer.Option(
@@ -89,6 +92,10 @@ def run(
         )
         raise typer.Exit(2)
     try:
+        if reference not in {None, "auto"}:
+            raise ValueError("Reference selection must be auto, or use --reference-id with an original FASTA ID.")
+        if reference == "auto" and reference_id is not None:
+            raise ValueError("Use --reference auto or --reference-id, not both.")
         cfg = RunConfig(
             mafft, threads, start_residue, end_residue, max_depth, min_split, min_freq, prune_cutoff,
             tree_mode=tree_mode, reference_id=reference_id, reproducible=reproducible

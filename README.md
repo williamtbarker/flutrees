@@ -5,7 +5,7 @@
 
 FluTrees converts influenza HA protein FASTA files into interpretable **mutation decision trees**, PDF reports, an Excel workbook, and portable data files. Analysis runs locally; sequences are not uploaded.
 
-**Version 0.3.0 aligns each dataset once and can build three complementary tree views from the same records, reference, and mutation observations.** The original frequency-based split rule remains the default. These trees organize observed substitutions; they are **not phylogenetic reconstructions**.
+**Version 0.3.1 aligns each dataset once and can build three complementary tree views from the same records, reference, and mutation observations.** The original frequency-based split rule remains the default. These trees organize observed substitutions; they are **not phylogenetic reconstructions**.
 
 ```bash
 flutrees --demo --tree-mode all --open
@@ -13,109 +13,113 @@ flutrees --demo --tree-mode all --open
 
 After installation, this command processes the bundled synthetic example and opens the results overview. For desktop file selection, run `flutrees --gui`.
 
-## What changed in 0.3.0
+## What changed in the 0.3 release family
 
 | Upgrade | Behavior |
 |---|---|
 | Frequency, balanced, and diversity trees | Choose one view or generate all three without repeating alignment. |
-| Legacy compatibility | Frequency remains the default; frozen v0.2.3 fixtures verify exact tree topology, IDs, memberships, and stopping reasons for the same mutation observations. |
+| Legacy compatibility | Default frequency runs retain the v0.2.3 alignment flags and split rule. Differential CLI tests compare scientific outputs against pinned v0.2.3 source, in addition to frozen tree fixtures. |
 | Cross-view comparisons | Compare root splits, group counts, depth, pruning, mutation use, and per-record assignments in HTML, TSV, and Excel. |
 | Explicit reference selection | `--reference-id` selects one unique original FASTA ID. The default remains the modal aligned sequence. |
-| Reproducibility | MAFFT iterative refinement is single-threaded by default with `--threadit 0`; pairwise stages can still use the requested threads. |
+| Alignment profiles | Frequency alone defaults to legacy flags. Alternative/all modes default to `--threadit 0`. Explicit `--reproducible` or `--legacy-alignment` overrides either default. |
 | Provenance | Record tool versions, exact MAFFT command, input/alignment/observation checksums, analytical settings, and a content/settings fingerprint. |
 | Portable output folders | Normalize unsafe characters, reserved device names, Unicode, and overlong stems; reject destination collisions before analysis. |
 | Completion checks | Validate every named tree view and its continuation images before marking the run complete. |
+| Large workbooks and JSON reload | Split oversized tables across numbered worksheets; reject overlong cell values instead of truncating them. Read and structurally validate exported trees with `flutrees.tree_io.read_tree`. |
+| Release acceptance | Require 5,000 generated property cases, full HA runs through 25,000 records, repeated alignment comparisons, and execution of the actual README installer blocks. |
 
 Earlier protections remain: residue-preserving unknown normalization, rejection of pre-gapped input and internal stops, compact MAFFT transport IDs, original-order restoration, exact decimal frequency thresholds, uncertainty-aware splits, retained input snapshots, and explicit failure records. See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Installation: choose one environment
 
-Requires **Python 3.9 or newer and MAFFT 7**. Python 3.11 is used in the examples below. The desktop window additionally needs Tk and a graphical display. Installation downloads dependencies; subsequent analyses and reports work offline.
+Requires **Python 3.9 or newer and MAFFT 7**. The desktop window additionally needs Tk and a graphical display. Installation downloads dependencies; subsequent analyses and reports work offline. Choose **one** environment. Do not activate conda and a separate venv together.
 
-Choose **one** of the following methods. Do not activate a conda environment and a separate venv for the same installation. Native Linux is covered by CI; macOS instructions are provided, but native Windows/macOS desktop installation is not covered by the test matrix. On Windows, WSL2 with Ubuntu is the recommended CLI route; copy the complete results folder to Windows to view it.
+The Linux command blocks below are executed directly from this README in release CI, including the `curl` bootstraps. CI uses the candidate commit and wheel through the documented `FLUTREES_REF` and `FLUTREES_PACKAGE` overrides; otherwise the commands install the published release. It supplies the bundled test inputs, not private laboratory data. The installer versions are pinned so the tested commands remain repeatable.
 
 ### 1. Python venv and pip
 
-Install MAFFT first with the appropriate system package manager:
+Install system prerequisites first. These commands are for **Ubuntu/Debian**, including Ubuntu under WSL2:
 
 ```bash
-# Ubuntu/Debian, including Ubuntu under WSL2:
 sudo apt-get update
-sudo apt-get install -y mafft python3-venv python3-tk git
-
-# macOS, with Homebrew already installed (use this instead of apt):
-# brew install mafft
+sudo apt-get install -y mafft python3-venv python3-tk git curl
 ```
 
-Then install FluTrees into its own virtual environment:
+On macOS with Homebrew already installed, use `brew install mafft` instead of `apt`. Use a Python installation with Tk for the desktop window. The CLI does not require Tk.
 
+<!-- install-check: venv -->
 ```bash
+# Create a new checkout; do not run this inside an existing flutrees directory.
 git clone https://github.com/williamtbarker/flutrees.git
 cd flutrees
-git checkout v0.3.0
+git checkout "${FLUTREES_REF:-v0.3.1}"
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install .
 mafft --version
 flutrees --version
-flutrees --demo --tree-mode all --threads 1 --outdir results --open
 
-# Analyze your own unaligned HA proteins:
-flutrees -i my_HA_proteins.fasta --tree-mode all --outdir results
+# Complete synthetic demonstration, including all three tree views:
+flutrees --demo --tree-mode all --threads 1 --outdir results --run-id demo
+
+# Run the included public HA fixture as a second acceptance check:
+flutrees -i tests/data/public_HA.fasta --tree-mode all --threads 1 --outdir results --run-id public
+
+# For your own unaligned HA proteins, use a new run ID:
+# flutrees -i my_HA_proteins.fasta --tree-mode all --outdir results --run-id laboratory
+# Open the absolute START_HERE.html path printed by the CLI, or add --open.
 ```
 
-The existing `bash install_mafft.sh --dry-run` helper can preview available package-manager options. It does not install a package manager. A Python installation with Tk is required for `flutrees --gui`; the CLI does not require Tk.
+`FLUTREES_REF` is optional and selects another existing tag or commit. Without it, the checkout is pinned to v0.3.1. The existing `bash install_mafft.sh --dry-run` helper previews package-manager options; it does not install a package manager itself.
 
 ### 2. Conda, with Anaconda's Miniconda installer
 
-Miniconda is Anaconda's smaller installer for conda; the full Anaconda Distribution is not required. An existing Anaconda or Miniconda installation can skip the installer block. Review the applicable installer and repository terms for organizational use.
+Miniconda is Anaconda's smaller conda installer; the full Anaconda Distribution is not required. Existing Anaconda/Miniconda users should skip the download and installation lines and activate their existing conda installation. The bootstrap below is **Linux x86_64 only**. The `-b` option is a noninteractive installation; review and accept the applicable [Anaconda terms](https://www.anaconda.com/legal) before executing it. Installation into an existing `~/miniconda3` directory is deliberately not forced.
 
+<!-- install-check: conda -->
 ```bash
 # If you do not have conda, install conda using Anaconda's Miniconda:
-# Linux x86_64 / Ubuntu under WSL2:
-curl -fL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o Miniconda3.sh
-
-# Apple Silicon macOS: use this download INSTEAD of the Linux command:
-# curl -fL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o Miniconda3.sh
-
-# Verify the SHA-256 against Anaconda's installer listing before running it:
-# Linux: sha256sum Miniconda3.sh
-# macOS: shasum -a 256 Miniconda3.sh
-bash Miniconda3.sh
-
-# With the default installation directory:
+curl -fL https://repo.anaconda.com/miniconda/Miniconda3-py311_26.7.1-1-Linux-x86_64.sh -o Miniconda3.sh
+printf '%s  %s\n' 'a6f98e6e19d5b7897ae887cd6af931eb863459f86ffd1a09cc370124cab0993e' 'Miniconda3.sh' | sha256sum -c -
+bash Miniconda3.sh -b -p "$HOME/miniconda3"
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
-```
 
-Select the installer matching your OS and architecture. Other platforms should use the [official installation guide](https://www.anaconda.com/docs/getting-started/installation); installer checksums are listed in the [Miniconda archive](https://repo.anaconda.com/miniconda/).
-
-```bash
 # Create a separate environment with Python, MAFFT, and Tk:
 conda create -n flutrees --override-channels -c conda-forge -c bioconda \
   --strict-channel-priority python=3.11 pip mafft tk -y
 conda activate flutrees
 
-# Install the versioned FluTrees wheel from this repository's release:
-python -m pip install "https://github.com/williamtbarker/flutrees/releases/download/v0.3.0/flutrees-0.3.0-py3-none-any.whl"
+# Install the published wheel, or a local Test Kit wheel supplied through FLUTREES_PACKAGE:
+python -m pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.1/flutrees-0.3.1-py3-none-any.whl}"
 mafft --version
 flutrees --version
-flutrees --demo --tree-mode all --threads 1 --outdir results --open
-flutrees -i my_HA_proteins.fasta --tree-mode balanced --outdir results
+flutrees --demo --tree-mode all --threads 1 --outdir results --run-id demo
 
-# At the end of your session:
+# flutrees -i my_HA_proteins.fasta --tree-mode balanced --outdir results --run-id laboratory
 conda deactivate
 ```
 
-MAFFT channel availability depends on platform. The venv/uv routes can instead use a separately installed system MAFFT via `--mafft /full/path/to/mafft`.
+For **Apple Silicon macOS**, replace the Linux bootstrap with the following, then run the same environment-creation and analysis commands:
+
+```bash
+# If you do not have conda on Apple Silicon macOS:
+curl -fL https://repo.anaconda.com/miniconda/Miniconda3-py311_26.7.1-1-MacOSX-arm64.sh -o Miniconda3.sh
+printf '%s  %s\n' 'da6322bf9a213536df5ce630da2a249b9fb6d433f439b84be07003a790be6be6' 'Miniconda3.sh' | shasum -a 256 -c -
+bash Miniconda3.sh -b -p "$HOME/miniconda3"
+source "$HOME/miniconda3/etc/profile.d/conda.sh"
+```
+
+Other architectures should use the [official installation guide](https://www.anaconda.com/docs/getting-started/installation). Installer hashes are published in the [Miniconda archive](https://repo.anaconda.com/miniconda/). MAFFT package availability varies by platform. Native Windows/macOS desktop operation is not certified by the Linux CI matrix; Windows users can run the CLI under WSL2 and view the complete results folder in Windows.
 
 ### 3. uv
 
-Install MAFFT using the system commands in the venv section. uv installs Python packages and can obtain Python, but does **not** install MAFFT.
+Install MAFFT with the system commands in the venv section first. uv manages Python and Python packages; it does **not** install MAFFT.
 
+<!-- install-check: uv -->
 ```bash
 # If you do not have uv, install uv:
-curl -LsSf https://astral.sh/uv/install.sh -o uv-install.sh
+curl -LsSf https://astral.sh/uv/0.12.20/install.sh -o uv-install.sh
 # Inspect uv-install.sh before executing downloaded code.
 sh uv-install.sh
 source "$HOME/.local/bin/env"
@@ -125,26 +129,28 @@ mkdir -p "$HOME/flutrees-work"
 cd "$HOME/flutrees-work"
 uv venv --python 3.11 .venv
 source .venv/bin/activate
-uv pip install "https://github.com/williamtbarker/flutrees/releases/download/v0.3.0/flutrees-0.3.0-py3-none-any.whl"
+uv pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.1/flutrees-0.3.1-py3-none-any.whl}"
 mafft --version
 flutrees --version
-flutrees --demo --tree-mode all --threads 1 --outdir results --open
-flutrees -i my_HA_proteins.fasta --tree-mode diversity --outdir results
+flutrees --demo --tree-mode all --threads 1 --outdir results --run-id demo
+
+# flutrees -i my_HA_proteins.fasta --tree-mode diversity --outdir results --run-id laboratory
 ```
 
-See the [official uv installation instructions](https://docs.astral.sh/uv/getting-started/installation/) for other shells and platforms. A managed Python may need additional Tk support for the desktop window; use the CLI when Tk is unavailable.
+See the [official uv instructions](https://docs.astral.sh/uv/getting-started/installation/) for other shells and platforms. Managed Python may require additional Tk support for the desktop window; the CLI remains available without Tk. `FLUTREES_PACKAGE` optionally selects an existing local wheel or another package URL; it does not change the installer commands.
 
-### Install from the test kit
+### Install from the Test Kit
 
-Download `FluTrees_v0.3.0_Test_Kit.zip` from the [release](https://github.com/williamtbarker/flutrees/releases/tag/v0.3.0), extract it, and open `START_HERE.html`. It contains an installable wheel, example inputs, complete three-view reports, checksums, and acceptance-test instructions. Python and MAFFT are not bundled. Previewing the reports requires neither.
+Download `FluTrees_v0.3.1_Test_Kit.zip` from the [release](https://github.com/williamtbarker/flutrees/releases/tag/v0.3.1), extract it, and open `START_HERE.html`. It contains the installable wheel, example inputs, complete three-view reports, checksums, validation evidence, and acceptance instructions. Python and MAFFT are not bundled; previewing the reports requires neither.
 
-Within an activated venv or conda environment, install the wheel with:
+Within an activated venv or conda environment:
 
 ```bash
-python -m pip install package/flutrees-0.3.0-py3-none-any.whl
+python -m pip install package/flutrees-0.3.1-py3-none-any.whl
+flutrees --demo --tree-mode all --threads 1 --open
 ```
 
-With uv, use `uv pip install package/flutrees-0.3.0-py3-none-any.whl` in the activated uv environment.
+With uv, use `uv pip install package/flutrees-0.3.1-py3-none-any.whl` in the activated environment.
 
 ## Choose a tree view
 
@@ -161,6 +167,7 @@ flutrees -i HA.fasta --tree-mode balanced
 flutrees -i HA.fasta --tree-mode diversity
 flutrees -i HA.fasta --tree-mode all
 flutrees -i HA.fasta --tree-mode all --reference-id unique_reference_ID
+flutrees -i HA.fasta --reference auto  # Explicit modal selection; also the default
 ```
 
 All modes use the same eligibility rules: both children meet `--min-split` and the ceiling of `--min-freq` times the node's record count; any uncertain observation at the candidate position withholds that split. `--max-depth` applies to every view. `--prune-cutoff` changes only the simplified presentation, never the full-tree assignments.
@@ -233,7 +240,7 @@ Each `trees/<mode>/` folder includes full/pruned PDF, PNG, editable SVG, Graphvi
 
 Root-level tree files retain the historical paths. They mirror **frequency** in `all` mode, or the explicitly selected single mode otherwise. `summary.json` records which mode is primary. Every full-tree record belongs to exactly one terminal group per mode. Node and group IDs are local to a mode and a run: join on mode as well as ID when comparing views.
 
-The default frequency workbook retains seven sheets: **Summary, Records, Mutations, Nodes, Node Membership, QC, Parameters**. Alternative/all-mode workbooks additionally contain **Tree Comparison, Tree Groups, Mutation Use, All Nodes, All Membership**. Filter Tree Groups by `mode` and `full_group_id` to inspect each view's terminal groups. Mutation Use is descriptive, not a significance score or consensus tree.
+For tables within one worksheet, the default frequency workbook retains seven sheets: **Summary, Records, Mutations, Nodes, Node Membership, QC, Parameters**. Alternative/all-mode workbooks additionally contain **Tree Comparison, Tree Groups, Mutation Use, All Nodes, All Membership**. Filter Tree Groups by `mode` and `full_group_id` to inspect each view's terminal groups. Mutation Use is descriptive, not a significance score or consensus tree. Tables longer than 1,048,575 data rows continue in numbered worksheets, such as **All Membership (2)**, with repeated headers and filters. Read every continuation sheet for the complete table. Excel cells longer than 32,767 characters cause an explicit error rather than silently losing text.
 
 HTML works offline and does not run scripts. Expand a node or its record list; use browser Find to search visible text. Excel offers full-record filtering. PDF, SVG, PNG, and DOT exports label counts as records rather than confidence scores. Graphviz is optional and needed only to render or rearrange DOT files yourself.
 
@@ -243,7 +250,7 @@ The default input window is **84–284 inclusive**, extracted before alignment. 
 
 Pre-gapped input is rejected. A single terminal `*` is removed and recorded; internal stops are rejected. `?`, `U`, and `O` become `X` without shifting positions. Windows with no interpretable amino acids are rejected. Short tails are padded and flagged. Duplicate IDs are made unique while retaining original IDs and headers.
 
-MAFFT runs in amino-acid mode with compact transport IDs. Output IDs, residue preservation, and aligned lengths are checked; public IDs and original input order are restored. The reference defaults to the most common aligned sequence, with first input occurrence breaking a tie. `--reference-id` must match exactly one **original** FASTA ID; missing or duplicated requested IDs stop preflight.
+MAFFT runs in amino-acid mode with compact transport IDs. Output IDs, residue preservation, and aligned lengths are checked; public IDs and original input order are restored. The reference defaults to the most common aligned sequence, with first input occurrence breaking a tie. `--reference auto` explicitly selects the modal rule and cannot be combined with `--reference-id`. `--reference-id` must match exactly one **original** FASTA ID; missing or duplicated requested IDs stop preflight.
 
 Mutation positions count **ungapped selected-reference residues plus the window-start offset**. They are not standardized H1/H3 numbering. Insertions at reference-gap columns are excluded from this substitution-only analysis. A short selected reference is flagged. Unknown, ambiguous, and deleted observations are recorded separately and cannot be treated as confirmed mutation negatives.
 
@@ -251,7 +258,9 @@ Duplicate sequences count as separate records. Reference choice, sample composit
 
 ## Reproducibility and completion
 
-By default, `--threadit 0` disables multithreading in MAFFT's iterative refinement stage, following [MAFFT's reproducibility guidance](https://mafft.cbrc.jp/alignment/software/multithreading.html). `--legacy-alignment` restores the prior flag set. The frequency **split rule** is unchanged, but changing alignment settings or MAFFT versions can still change upstream observations. No bit-for-bit equivalence across different tools, versions, platforms, or alignments is promised.
+A default **frequency-only** run retains the v0.2.3 MAFFT flag set as well as its split rule. This preserves the existing invocation rather than changing upstream alignment silently. The **balanced, diversity, and all** modes default to `--threadit 0`, following [MAFFT's reproducibility guidance](https://mafft.cbrc.jp/alignment/software/multithreading.html). This disables multithreaded iterative refinement while allowing parallel pairwise stages. `--reproducible` enables that profile for any mode; `--legacy-alignment` selects the older flag set for any mode. The effective choice and exact command are recorded.
+
+An `all` run always uses one alignment for every tree. When comparing separate frequency and alternative runs, select the same explicit alignment profile. v0.3.0 used reproducible alignment for all default runs; v0.3.1 restores the historical default for frequency alone. Twelve differential CLI cases compare default and explicit profiles against the pinned v0.2.3 code, checking exact scientific tables, alignments, memberships, and trees on known inputs. This is a regression contract under the same tested dependencies, not a promise of byte identity across different MAFFT versions, platforms, timestamps, or PDF renderers.
 
 `provenance.json` records Python and dependency versions, MAFFT version/path/command, effective settings, reference ID, input and alignment SHA-256 values, and a canonical mutation-observation hash. `analysis_id` fingerprints these contents and settings; timestamps and output locations do not affect it. It is a provenance identifier, not a validation certificate. A failed version probe is disclosed rather than guessed. `mafft.log` retains aligner diagnostics and strategy details.
 
@@ -274,21 +283,25 @@ For practical acceptance checks, see [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.
 | Tk/display unavailable | Use the CLI and open the results on a desktop machine. |
 | Partial exports | Inspect dataset and run `status.json`, then correct the cause and use a new run ID. |
 
-Diversity scoring and record-rich exports use more memory and time as datasets grow. The tree benchmark separates split construction from MAFFT and report generation; it is not an end-to-end capacity guarantee. Large membership tables remain subject to Excel's sheet limits. Reduce dataset size or tree depth when needed; export failures must not be interpreted as complete analyses.
+Diversity scoring and record-rich exports use more memory and time as datasets grow. Release acceptance runs the full HA-input/alignment/all-view/export pipeline at 100, 500, 1,000, 5,000, 10,000, and 25,000 records and checks record conservation in JSON, TSV, and the workbook. That fixture repeats unmodified public HA proteins with distinct IDs; it is not 25,000 independent biological observations or a guarantee for every degree of sequence diversity. Stage timings and resource measurements are included in the Test Kit. Excel row limits are handled with continuation sheets, but memory, disk capacity, and extreme cell lengths still matter. Export failures must not be interpreted as complete analyses.
 
 ## Development and validation
 
 ```bash
 python -m pip install -e '.[dev]'
+# The differential tests verify this exact historical source:
+git worktree add --detach validation/legacy 5683105e015e19ccaa5744789de9ad8941331975
 ruff check .
 xvfb-run -a python -m pytest --cov=flutrees --cov-branch \
   --cov-report=term-missing --cov-report=json --cov-fail-under=100
 python -m build
 python benchmarks/benchmark_tree_modes.py --output benchmark.json
+python benchmarks/benchmark_end_to_end.py --outdir validation/ha-performance
+python benchmarks/benchmark_alignment.py --outdir validation/alignment-comparison
 ```
 
-CI runs Python 3.9, 3.11, and 3.13 on Linux. It requires exact **100% statement and branch coverage of `src/flutrees`**, unchanged from the prior release. Tests include frozen legacy tree hashes, independent position-level oracles for all modes, Hypothesis-generated observations and uncertainty masks, real MAFFT, reference/error cases, interruption and missing-artifact failures, workbook/PDF contents, paginated figure geometry, native Graphviz rendering, a desktop example under Xvfb, Chromium report checks, and fresh-wheel execution.
+CI runs Python 3.9, 3.11, and 3.13 on Linux. It requires exact **100% statement and branch coverage of `src/flutrees`**, unchanged from the prior release. Tests include 30 frozen legacy tree hashes, 12 differential legacy/current CLI runs, independent position-level oracles for all modes, 5,000 Hypothesis-generated datasets and uncertainty masks, JSON reload/round trips, a real Excel worksheet-boundary test, real MAFFT, reference/error cases, interruption and missing-artifact failures, workbook/PDF contents, paginated figure geometry, native Graphviz rendering, a desktop example under Xvfb, Chromium report checks, and fresh-wheel execution.
 
-Coverage measures executed code, not scientific validity or absence of all defects. MAFFT, Tk, third-party libraries, installation helpers, and release tooling are outside the Python application coverage denominator. See [docs/VALIDATION_0.3.0.md](docs/VALIDATION_0.3.0.md) for scope and benchmark interpretation.
+Coverage measures executed code, not scientific validity or absence of all defects. MAFFT, Tk, third-party libraries, installation helpers, and release tooling are outside the Python application coverage denominator. See [the acceptance matrix](docs/ACCEPTANCE.md) and [v0.3.1 validation scope](docs/VALIDATION_0.3.1.md). Release packages include the completed run's actual installer transcripts, benchmark measurements, test report, and coverage data. The [v0.3.0 validation record](docs/VALIDATION_0.3.0.md) is retained as historical documentation.
 
 MIT License. See [LICENSE](LICENSE) and [CITATION.cff](CITATION.cff).

@@ -55,6 +55,7 @@ def analysis_provenance(cfg, out, input_sha256, reference_id, mutations):
     analytical_config = asdict(cfg)
     analytical_config.pop("mafft")  # installation path is not an analytical setting
     analytical_config["threads"] = cfg.resolved_threads()
+    analytical_config["reproducible"] = cfg.resolved_reproducible()
     identity = {
         "schema_version": 1, "input_sha256": input_sha256,
         "alignment_sha256": sha256_file(out / "aligned.fasta"),
@@ -66,7 +67,7 @@ def analysis_provenance(cfg, out, input_sha256, reference_id, mutations):
     return {
         **identity, "analysis_id": hashlib.sha256(encoded).hexdigest(),
         "mafft_executable": executable,
-        "mafft_command": alignment_command(executable, out / "mafft_input.fasta", cfg.resolved_threads(), cfg.reproducible),
+        "mafft_command": alignment_command(executable, out / "mafft_input.fasta", cfg.resolved_threads(), cfg.resolved_reproducible()),
         "platform": platform.platform(),
         "identity_note": "Content and settings fingerprint, not a claim of cross-version or cross-platform equivalence.",
     }

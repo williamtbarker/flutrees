@@ -1,30 +1,26 @@
-# FluTrees 0.3.0
+# FluTrees 0.3.1
 
-Three complementary mutation-tree views from one HA alignment, with the original frequency split rule retained as the default.
+Completes the 0.3 release family's compatibility and acceptance checks while retaining its three complementary tree views. This patch supersedes 0.3.0; its published tag and assets remain unchanged.
 
 ## Download and start
 
-Download `FluTrees_v0.3.0_Test_Kit.zip`, extract it, and open `START_HERE.html`. The kit includes the installable wheel, synthetic and public HA inputs, complete three-view example results, validation records, and checksums. Python 3.9 or newer and MAFFT are required for new analyses; neither is bundled. Existing reports can be viewed without installing FluTrees.
+Download `FluTrees_v0.3.1_Test_Kit.zip`, extract it, and open `START_HERE.html`. The kit contains the installable wheel, synthetic/public HA examples with all three views, complete installation instructions, and the actual validation evidence from this build. Python 3.9 or newer and MAFFT are required for new analyses; neither is bundled. Existing reports can be viewed without installing the software.
 
-The wheel, source archive, example tree PDF, and `SHA256SUMS.txt` are also available separately. The README includes complete venv/pip, conda/Miniconda, and uv installation and run examples.
+The wheel, source archive, example PDF, and release checksums are available separately. The README provides venv/pip, Anaconda Miniconda, and uv workflows, including the installer download commands.
 
-## Tree views
+## Changes
 
-- **Frequency (Mode A, default):** retain the legacy most-prevalent eligible substitution rule and encounter-order tie handling.
-- **Balanced (Mode B):** favor the most even eligible split.
-- **Diversity (Mode C):** favor reduction in residue entropy at other completely observed positions, excluding the candidate's own site and its other alleles.
-- **All:** `--tree-mode all` builds every view from the same alignment, reference, mutation calls, and uncertainty observations.
+- Frequency-only runs now retain the historical MAFFT flags by default, in addition to the unchanged frequency split rule. Alternative/all modes default to reproducible refinement. Explicit `--reproducible` and `--legacy-alignment` override either default; all-mode trees still share one alignment.
+- Exported full and pruned JSON trees can be reloaded with `flutrees.tree_io.read_tree`, with structural and record-membership validation and reconstructed path state.
+- Oversized Excel tables continue on numbered worksheets. Cell strings exceeding the format limit fail with an explanation instead of being silently truncated.
+- Release acceptance now includes 5,000 generated datasets across all modes, twelve differential CLI cases against pinned v0.2.3 source, JSON round trips, and the actual Excel worksheet row boundary.
+- Six complete HA-input/real-MAFFT/all-view/report runs cover 100 through 25,000 records, with conservation checks, stage timings, and resource records. Eighteen repeated alignment runs quantify legacy/reproducible behavior and cost.
+- Separate isolated jobs execute the actual README venv, curl/Miniconda, and curl/uv command blocks. Their transcripts, hashes, and completed example records are included in the kit.
 
-Each view has full and simplified PDF/PNG/SVG/DOT/JSON/text trees and record-level assignments. HTML and Excel expose cross-view comparisons. Root-level filenames remain available and mirror the primary view: frequency for `all`, otherwise the selected mode. Node and group IDs must be interpreted with their mode.
+Frequency, balanced, diversity, and `--tree-mode all` remain available through the CLI and desktop window. Existing reference selection, input integrity, portable names, provenance, comparisons, and completion protections remain in place.
 
-## Hardening and usability
+## Release gates and interpretation
 
-`--reference-id` selects one unique original FASTA ID; modal reference selection remains the default. MAFFT uses `--threadit 0` by default to avoid multithreaded iterative-refinement variation; `--legacy-alignment` restores the previous flags. Provenance includes software versions, the exact alignment command, content checksums, and an analysis fingerprint. Unsafe output names are normalized with collision checks. Completion requires every requested view and continuation image.
+Publication requires the Linux Python 3.9/3.11/3.13 tests with exact 100% application statement and branch coverage, real MAFFT, desktop/Xvfb, Chromium, Graphviz, clean-wheel examples, all installation checks, all six pipeline sizes, alignment comparisons, and verified packaging. No coverage exclusions or reduced thresholds were introduced.
 
-The desktop window includes tree-view and reference controls. The CLI reports selected modes, file count, absolute output location, and which report to open. Existing input-integrity, uncertainty, snapshot, and failure-reporting protections remain in place.
-
-## Validation and interpretation
-
-Release publication is gated on Linux tests for Python 3.9, 3.11, and 3.13; exact 100% application statement and branch coverage; legacy golden outputs; independent strategy oracles and property tests; real MAFFT and desktop checks; Chromium and Graphviz checks; and fresh-wheel example runs. Benchmark scope and limitations are documented in `docs/VALIDATION_0.3.0.md`.
-
-These are exploratory mutation decision trees, not phylogenies, confidence estimates, or clinical interpretations. The frequency split rule is unchanged for identical mutation observations; altered alignment settings, references, inputs, or software versions can change upstream observations. Native Windows/macOS desktop installation and large-scale end-to-end surveillance workloads are not certified by this release.
+The large workload repeats unmodified public HA records with unique IDs; it is not 25,000 independent biological samples. Tests establish the specified behavior under tested environments, not clinical validity, phylogeny, standardized HA numbering, universal capacity, or equivalence across different dependencies. Native Windows/macOS desktop installation remains outside the Linux matrix. See `docs/ACCEPTANCE.md` and `docs/VALIDATION_0.3.1.md` for the exact contracts.
