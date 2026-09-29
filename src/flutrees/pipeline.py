@@ -22,6 +22,9 @@ from .exports import (
     STYLE,
     write_tables,
     write_tree,
+    write_text_tree,
+    write_dot_tree,
+    group_assignments,
     write_node_summary,
     write_summary,
     write_pdf,
@@ -91,6 +94,11 @@ def run_one(cfg: RunConfig, fasta: Path, run_root: Path, progress=print):
             "tree_pruned.pdf",
             "tree_full.json",
             "tree_pruned.json",
+            "tree_full.txt",
+            "tree_pruned.txt",
+            "tree_full.dot",
+            "tree_pruned.dot",
+            "group_assignments.tsv",
             "summary.json",
             "metadata.tsv",
             "aligned.fasta",
@@ -217,6 +225,10 @@ def _analyze(cfg, fasta, out, progress):
     write_tables(out, metadata, mutations, counts)
     write_tree(out / "tree_full.json", full)
     write_tree(out / "tree_pruned.json", pruned)
+    for view, tree in (("full", full), ("pruned", pruned)):
+        write_text_tree(out / f"tree_{view}.txt", tree, summary, view)
+        write_dot_tree(out / f"tree_{view}.dot", tree)
+    group_assignments(full).to_csv(out / "group_assignments.tsv", sep="\t", index=False)
     write_node_summary(out / "node_summary.tsv", full, pruned)
     write_summary(out / "summary.json", summary)
     write_pdf(out / "report.pdf", summary, counts, pruned)

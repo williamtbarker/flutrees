@@ -9,7 +9,7 @@ import pandas as pd
 from .figures import tree_figure, tree_pages
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from .tree_build import to_dict
+from .tree_build import to_dict, iter_nodes
 
 METHOD = (
     "Mutation decision tree, not a phylogeny. Counts represent sequence records, including duplicates. "
@@ -36,6 +36,77 @@ def write_tables(outdir, metadata_df, mutation_df, mut_counts):
 
 def write_tree(outpath, tree):
     write_summary(outpath, to_dict(tree))
+
+
+def write_text_tree(outpath, tree, summary, view):
+    """A complete, monospaced trace with the same node IDs as every other export."""
+    lines = [
+        f"FluTrees - {view} mutation decision tree",
+        f"Input: {summary['input_name']}",
+        f"Reference: {summary['reference_id']}",
+        f"Window: {summary['start_residue']}-{summary['end_residue']}",
+        "", textwrap.fill(METHOD, 100), "",
+        "Read top to bottom; indentation shows parent/child relationships.",
+        "Percentages use all input records. Match #node IDs to Excel or node_membership.tsv.",
+        "",
+    ]
+
+    def walk(node, prefix="", connector=""):
+        lines.append(
+            f"{prefix}{connector}#{node.node_id} {node.label} | "
+            f"{node.support:,} records | {node.support / tree.support:.1%} of input"
+        )
+        indent = prefix
+        if connector:
+            indent += "    " if connector == "`-- " else "|   "
+        if node.stop_reason:
+            lines.append(f"{indent}Stop: {node.stop_reason}")
+        children = [c for c in (node.left, node.right) if c is not None]
+        for i, child in enumerate(children):
+            walk(child, indent, "`-- " if i == len(children) - 1 else "+-- ")
+
+    walk(tree)
+    outpath.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def write_dot_tree(outpath, tree):
+    """Editable topology without invented evolutionary branch lengths."""
+    lines = [
+        "digraph FluTrees {",
+        '  graph [rankdir=LR, label="Mutation decision tree - record counts, not confidence", labelloc=t];',
+        '  node [shape=box, style="rounded,filled", fillcolor="#d9f0e7"];',
+        '  edge [arrowhead=none];',
+    ]
+    for node in iter_nodes(tree):
+        label = f"#{node.node_id} {node.label}\n{node.support:,} records ({node.support / tree.support:.1%} of input)"
+        if node.stop_reason:
+            label += "\n" + node.stop_reason
+        lines.append(f"  n{node.node_id} [label={json.dumps(label, ensure_ascii=False)}];")
+        for child in (node.left, node.right):
+            if child is not None:
+                lines.append(f"  n{node.node_id} -> n{child.node_id};")
+    lines.append("}")
+    outpath.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def group_assignments(tree):
+    """Exactly one terminal full-tree group and complete decision path per record."""
+    rows = []
+
+    def walk(node, path):
+        path = path + [node.label]
+        children = [c for c in (node.left, node.right) if c is not None]
+        if not children:
+            rows.extend(
+                {"record_id": rid, "full_group_id": node.node_id,
+                 "full_group_size": node.support, "full_group_path": " > ".join(path)}
+                for rid in sorted(node.seqs)
+            )
+        for child in children:
+            walk(child, path)
+
+    walk(tree, [])
+    return pd.DataFrame(rows)
 
 
 def node_tables(tree_full, tree_pruned):
@@ -82,6 +153,9 @@ def write_summary(outpath: Path, summary):
 def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
     nodes, members = node_tables(full, pruned)
     records = metadata.merge(flat_mutations(mutations), on="record_id", validate="one_to_one")
+    records = records.merge(group_assignments(full), on="record_id", validate="one_to_one")
+    first_columns = ["record_id", "full_group_id", "full_group_size", "full_group_path"]
+    records = records[first_columns + [c for c in records.columns if c not in first_columns]]
     summary_rows = [
         ("Input", summary["input_name"]),
         ("Sequence records", summary["n_records"]),
@@ -89,7 +163,7 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
         ("Residue window", f"{summary['start_residue']}-{summary['end_residue']}"),
         (
             "How to use",
-            "Filter Records by mutation; filter Node Membership by view and node_id to identify a group.",
+            "Filter Records by full_group_id to select a final group; full_group_path traces every decision. Node Membership also includes intermediate groups.",
         ),
         ("Interpretation", METHOD),
     ]
@@ -127,6 +201,8 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
             if name in {"Summary", "QC"}:
                 ws.set_column(len(df.columns) - 1, len(df.columns) - 1, 105, wrap)
                 ws.set_default_row(60)
+            if name == "Records":
+                ws.set_column(3, 3, 70, wrap)
             if name == "Summary":
                 ws.set_row(6, 135)
 
@@ -221,7 +297,13 @@ def write_html(outpath, summary, full, pruned, metadata):
         "command (Ctrl+F or Command+F) to search visible text; open a group’s records to search them.</p>"
         '<p>For a presentation, use <a href="tree_pruned.png">PNG</a> or editable <a href="tree_pruned.svg">SVG</a>. '
         'These show the overview page. <a href="tree_pruned.pdf">Simplified tree PDF</a> and '
-        '<a href="tree_full.pdf">full tree PDF</a> include every continuation page. Additional page images are in this folder.</p></section>'
+        '<a href="tree_full.pdf">full tree PDF</a> include every continuation page. Additional page images are in this folder.</p>'
+        '<p>For a plain-text trace, open the <a href="tree_full.txt">full text tree</a> or '
+        '<a href="tree_pruned.txt">simplified text tree</a>. For custom diagram layouts, use the '
+        '<a href="tree_full.dot">full Graphviz graph</a> or <a href="tree_pruned.dot">simplified Graphviz graph</a>.</p>'
+        '<p>In Excel Records, filter <strong>full_group_id</strong> to select a final group; '
+        '<strong>full_group_path</strong> shows every decision leading to it. These assignments are also in '
+        '<a href="group_assignments.tsv">group_assignments.tsv</a>. Group IDs are local to this run and can change between runs.</p></section>'
         f"<section><h2>How to interpret this run</h2><p>{esc(METHOD)}</p><p>Window: {summary['start_residue']}–{summary['end_residue']}. "
         f"Reference record: {esc(summary['reference_id'])}</p><ul>{warnings}</ul></section>"
         '<section><h2>Tree overview</h2><img src="tree_pruned.svg" alt="Pruned mutation decision tree overview"></section>'

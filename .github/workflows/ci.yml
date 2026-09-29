@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: sudo apt-get update && sudo apt-get install -y mafft xvfb xauth python3-tk
+      - run: sudo apt-get update && sudo apt-get install -y mafft xvfb xauth python3-tk graphviz
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[dev]'
       - run: ruff check .

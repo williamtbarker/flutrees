@@ -41,13 +41,20 @@ This runs 48 deliberately synthetic protein records through real MAFFT. It is a 
 | See a simplified tree with small groups hidden | `tree_pruned.pdf` |
 | Paste a figure into a slide | `tree_pruned.png` or `tree_full.png` |
 | Edit a figure in a vector graphics application | `tree_pruned.svg` or `tree_full.svg` |
+| Read or copy the entire tree as plain text | `tree_full.txt` or `tree_pruned.txt` |
+| Rearrange the tree in Graphviz | `tree_full.dot` or `tree_pruned.dot` |
+| Trace each record to its final group | `group_assignments.tsv`, or the group columns in Excel Records |
 | Reuse the analysis in another tool | JSON, TSV, and FASTA files |
 
 Large trees continue across numbered PDF pages. The unnumbered PNG and SVG show the first page; additional images use `_page_002`, `_page_003`, and so on. No branches are silently cut off to fit the page.
 
 The HTML report works offline. Click a group to collapse or expand it, or **Show records in this group** to see its members. Browser zoom works normally. Use the browser's Find command to search visible text; expand the record list to search it. Full-text filtering across all records is available in the workbook.
 
-The workbook contains **Summary**, **Records**, **Mutations**, **Nodes**, **Node Membership**, **QC**, and **Parameters**. To identify a group's sequences, filter Node Membership by `view` (`full` or `pruned`) and `node_id`; join to Records using `record_id`. Parent IDs and complete paths are included in Nodes.
+The workbook contains **Summary**, **Records**, **Mutations**, **Nodes**, **Node Membership**, **QC**, and **Parameters**. In Records, filter **full_group_id** to select a final group immediately; **full_group_size** gives its record count and **full_group_path** traces every decision leading to it. Every record receives exactly one full-tree terminal group, including groups hidden in the simplified view. Group IDs are local to a run and may change between analyses.
+
+For intermediate nodes, filter Node Membership by `view` (`full` or `pruned`) and `node_id`; connect to Records using `record_id`. Parent IDs and complete paths are included in Nodes. The plain-text trees retain every node, indentation, record count, percentage, and stopping/pruning explanation. DOT files preserve the editable graph topology without adding evolutionary branch lengths; Graphviz is optional and is not needed to generate any output.
+
+For a first run on your own computer, follow the [short acceptance-test guide](docs/TESTING_GUIDE.md).
 
 ## One-time installation
 

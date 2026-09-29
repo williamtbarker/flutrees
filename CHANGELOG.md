@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2 — 2026-09-28
+
+- Added full and simplified plain-text tree traces with node IDs, counts, percentages, hierarchy, and stopping/pruning explanations.
+- Added editable Graphviz DOT trees, preserving topology without inventing evolutionary branch lengths. Graphviz is optional for users.
+- Added one full-tree terminal-group assignment per record, exported as TSV and directly in Excel Records with group size and complete decision path.
+- Linked the new outputs from the offline report and included them in the completion gate.
+- Added portable-export tests, native Graphviz rendering in CI, and a short manual acceptance-test guide. Retained exact 100% statement and branch coverage.
+
 ## 0.2.1 — 2026-09-28
 
 - Adversarial scientific fix: preserve `?`, `U`, and `O` positions as unknown residues before MAFFT. Previously MAFFT could silently remove `?` and shift mutation coordinates. Remove and record a single terminal stop, reject internal stops, pre-gapped inputs, empty IDs, and wholly unknown windows.
