@@ -19,4 +19,4 @@ The 0.3 release family is published only after the following technical checks su
 | Visual/desktop/browser portability | PDF/SVG/PNG/DOT/XLSX content, Graphviz, Xvfb desktop, Chromium | Test and browser jobs |
 | Versioned customer package | Checked wheel/source, examples, instructions, all acceptance evidence, internal/external checksums | Test Kit, source archive, wheel, `BUILD_INFO.txt`, `SHA256SUMS.txt` |
 
-The full workload repeats unmodified public HA fixture records with unique identifiers; it does not claim a representative 25,000-isolate surveillance panel. See `VALIDATION_0.3.1.md` for the exact workload, equality contract, and interpretation boundaries. Operational delivery dates are not software properties and cannot be certified by this matrix.
+The full workload repeats unmodified public HA fixture records with unique identifiers; it does not claim a representative 25,000-isolate surveillance panel. See `VALIDATION_0.3.1.md` for the exact workload, equality contract, and interpretation boundaries.
