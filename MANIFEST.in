@@ -1,6 +1,7 @@
 include CHANGELOG.md
 include install_mafft.sh
 recursive-include tests *.py *.fasta *.json *.md
-recursive-include docs *.md *.html
+recursive-include docs *.md *.html *.json
 include CITATION.cff
 recursive-include benchmarks *.py
+recursive-include scripts *.py *.sh

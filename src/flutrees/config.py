@@ -19,9 +19,11 @@ class RunConfig:
     prune_cutoff: int = 10
     tree_mode: str = "frequency"
     reference_id: Optional[str] = None
-    reproducible: bool = True
+    reproducible: Optional[bool] = None
 
     def __post_init__(self) -> None:
+        if self.reproducible is not None and type(self.reproducible) is not bool:
+            raise ValueError("Reproducible alignment must be True, False, or None for the mode default.")
         if self.tree_mode not in {"frequency", "balanced", "diversity", "all"}:
             raise ValueError("Tree mode must be frequency, balanced, diversity, or all.")
         if self.reference_id is not None and not self.reference_id.strip():
@@ -54,3 +56,9 @@ class RunConfig:
 
     def tree_modes(self):
         return ("frequency", "balanced", "diversity") if self.tree_mode == "all" else (self.tree_mode,)
+
+    def resolved_reproducible(self) -> bool:
+        """Keep the single frequency workflow unchanged; stabilize new views."""
+        if self.reproducible is not None:
+            return self.reproducible
+        return self.tree_mode != "frequency"

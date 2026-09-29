@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 from hypothesis import given, settings, strategies as st
 
+from flutrees.tree_io import from_dict
 from flutrees.strategies import SplitSelector, entropy
 from flutrees.tree_build import build_tree, iter_nodes, prune_tree, to_dict
 
@@ -87,7 +88,7 @@ def independent_choice(observations, node, minimum, frequency, mode, encounter):
     return max(candidates, key=lambda item: item[0])[1] if candidates else None
 
 
-@settings(max_examples=500, deadline=None, derandomize=True)
+@settings(max_examples=5000, deadline=None, derandomize=True)
 @given(st.one_of(
     st.lists(st.lists(st.sampled_from(list("AATG")), min_size=5, max_size=5), min_size=2, max_size=40),
     st.lists(st.lists(st.sampled_from(list("AATGX")), min_size=5, max_size=5), min_size=2, max_size=40)),
@@ -98,6 +99,9 @@ def test_all_modes_against_independent_position_oracle(observations, depth, mini
     for mode in MODES:
         tree = build_tree(frame, depth, minimum, frequency, mode)
         assert digest(tree) == digest(build_tree(frame, depth, minimum, frequency, mode))
+        restored = from_dict(json.loads(json.dumps(to_dict(tree))))
+        assert digest(restored) == digest(tree)
+        assert [n.used for n in iter_nodes(restored)] == [n.used for n in iter_nodes(tree)]
         leaves = []
         for node in iter_nodes(tree):
             assert node.depth <= depth and node.support == len(node.seqs)

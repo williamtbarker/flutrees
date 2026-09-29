@@ -1,4 +1,4 @@
-# FluTrees 0.3.0: installation and testing
+# FluTrees 0.3.1: installation and testing
 
 Start with the included example, then try one small protein FASTA you know well.
 
@@ -26,12 +26,12 @@ For the downloaded test kit, run these commands after opening Terminal in the ex
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install package/flutrees-0.3.0-py3-none-any.whl
+python -m pip install package/flutrees-0.3.1-py3-none-any.whl
 flutrees --version
 flutrees --demo --open
 ```
 
-The version should be **0.3.0**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
+The version should be **0.3.1**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
 
 If working from a GitHub source download instead, run `python -m pip install .` from its project folder in place of the wheel-install command. The other commands are the same.
 
@@ -84,3 +84,9 @@ Check `provenance.json` for the MAFFT version, exact command including `--thread
 For your own data, `--reference-id` must identify exactly one original FASTA record. Repeat a small run into a different output folder with the same environment and settings; verify the alignment checksum and analytical fingerprint. This checks local repeatability, not cross-platform equivalence.
 
 The README contains alternative conda/Miniconda and uv instructions alongside the original venv workflow. Choose one environment. Downloading an installer is not evidence of successful installation; verify both `mafft --version` and `flutrees --version` before analysis.
+
+## Release acceptance evidence
+
+The Test Kit includes `docs/ACCEPTANCE.md` and `docs/VALIDATION_0.3.1.md`, with the completed build's test report, coverage counters, full HA pipeline measurements, alignment comparisons, and exact README installation transcripts under `validation/`. Large workbook tables continue on numbered sheets; include those sheets when counting all records.
+
+A default frequency-only run uses the historical alignment flags. An all-mode run uses reproducible refinement by default. To compare separate runs under the same alignment settings, explicitly pass `--reproducible` or `--legacy-alignment` to both. These choices are recorded in `summary.json` and `provenance.json`.

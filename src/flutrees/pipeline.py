@@ -170,7 +170,7 @@ def _analyze(cfg, fasta, out, progress):
     )
     aligned = out / "aligned.fasta"
     progress("Aligning sequences with MAFFT. Large datasets may take several minutes...")
-    mafft_align(mafft_input, aligned, cfg.mafft, cfg.resolved_threads(), cfg.reproducible)
+    mafft_align(mafft_input, aligned, cfg.mafft, cfg.resolved_threads(), cfg.resolved_reproducible())
     aligned_records = list(SeqIO.parse(str(aligned), "fasta"))
     if sorted(r.id for r in aligned_records) != sorted(transport):
         raise ValueError("MAFFT output IDs do not match the input records.")
@@ -233,6 +233,7 @@ def _analyze(cfg, fasta, out, progress):
     if provenance["versions"]["mafft"] == "unavailable":
         warnings.append("MAFFT version could not be read; executable, command, and alignment checksum are retained.")
     summary = {
+        "alignment_mode": "reproducible" if cfg.resolved_reproducible() else "legacy",
         "schema_version": 2,
         "tree_strategy": cfg.tree_modes()[0],
         "tree_modes": list(cfg.tree_modes()),

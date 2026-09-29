@@ -140,3 +140,28 @@ def test_paginated_family_contract_covers_every_continuation():
     assert "tree_full_page_009.svg" in files and "tree_full_page_009.png" in files
     tables = comparison_tables({"frequency": (tree, tree)})
     assert tables["Mutation Use"].split_occurrences.max() > 1
+
+
+def test_alignment_profile_defaults_and_cli_overrides(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(pipeline, "run_many", lambda cfg, *args: calls.append(cfg) or tmp_path)
+    for mode in ("frequency", "balanced", "diversity", "all"):
+        for flag, expected in (([], mode != "frequency"), (["--legacy-alignment"], False), (["--reproducible"], True)):
+            result = CliRunner().invoke(app, ["--demo", "--tree-mode", mode, *flag])
+            assert result.exit_code == 0, result.output
+            assert calls[-1].resolved_reproducible() is expected
+    with pytest.raises(ValueError, match="Reproducible"):
+        RunConfig(reproducible="yes")
+    legacy_command = alignment_command("mafft", tmp_path / "input.fasta", 8, RunConfig().resolved_reproducible())
+    assert legacy_command == ["mafft", "--amino", "--inputorder", "--auto", "--thread", "8", str(tmp_path / "input.fasta")]
+
+
+def test_explicit_auto_reference_cli(tmp_path, monkeypatch):
+    run = Mock(return_value=tmp_path)
+    monkeypatch.setattr(pipeline, "run_many", run)
+    result = CliRunner().invoke(app, ["--demo", "--reference", "auto"])
+    assert result.exit_code == 0, result.output
+    assert run.call_args.args[0].reference_id is None
+    for options in (["--reference", "other"], ["--reference", "auto", "--reference-id", "record"]):
+        result = CliRunner().invoke(app, ["--demo", *options])
+        assert result.exit_code == 1 and "reference" in result.output.lower()
