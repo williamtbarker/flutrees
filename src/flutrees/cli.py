@@ -56,6 +56,15 @@ def run(
     prune_cutoff: int = typer.Option(
         10, "--prune-cutoff", help="Hide groups smaller than this in simplified view"
     ),
+    tree_mode: str = typer.Option(
+        "frequency", "--tree-mode", help="Tree view: frequency (legacy), balanced, diversity, or all. Aligns once."
+    ),
+    reference_id: Optional[str] = typer.Option(
+        None, "--reference-id", help="Use exactly one matching original FASTA ID; default is the modal sequence."
+    ),
+    reproducible: bool = typer.Option(
+        True, "--reproducible/--legacy-alignment", help="Disable multithreaded iterative refinement; legacy option restores older MAFFT flags."
+    ),
     demo: bool = typer.Option(False, "--demo", help="Run the included synthetic protein example"),
     open_results: bool = typer.Option(
         False, "--open", help="Open the results overview in your browser"
@@ -81,7 +90,8 @@ def run(
         raise typer.Exit(2)
     try:
         cfg = RunConfig(
-            mafft, threads, start_residue, end_residue, max_depth, min_split, min_freq, prune_cutoff
+            mafft, threads, start_residue, end_residue, max_depth, min_split, min_freq, prune_cutoff,
+            tree_mode=tree_mode, reference_id=reference_id, reproducible=reproducible
         )
         if run_id is None:
             sj = os.environ.get("SLURM_JOB_ID")

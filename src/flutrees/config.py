@@ -17,8 +17,15 @@ class RunConfig:
     min_split: int = 5
     min_freq: float = 0.05
     prune_cutoff: int = 10
+    tree_mode: str = "frequency"
+    reference_id: Optional[str] = None
+    reproducible: bool = True
 
     def __post_init__(self) -> None:
+        if self.tree_mode not in {"frequency", "balanced", "diversity", "all"}:
+            raise ValueError("Tree mode must be frequency, balanced, diversity, or all.")
+        if self.reference_id is not None and not self.reference_id.strip():
+            raise ValueError("Reference ID must not be empty.")
         if self.start_residue < 1 or self.end_residue < self.start_residue:
             raise ValueError("Residue window must satisfy 1 <= start <= end.")
         if not 0 <= self.max_depth <= 20:
@@ -44,3 +51,6 @@ class RunConfig:
             except ValueError:
                 pass
         return 8
+
+    def tree_modes(self):
+        return ("frequency", "balanced", "diversity") if self.tree_mode == "all" else (self.tree_mode,)

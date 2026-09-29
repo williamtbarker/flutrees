@@ -1,4 +1,4 @@
-# FluTrees 0.2.3: installation and testing
+# FluTrees 0.3.0: installation and testing
 
 Start with the included example, then try one small protein FASTA you know well.
 
@@ -26,12 +26,12 @@ For the downloaded test kit, run these commands after opening Terminal in the ex
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install package/flutrees-0.2.3-py3-none-any.whl
+python -m pip install package/flutrees-0.3.0-py3-none-any.whl
 flutrees --version
 flutrees --demo --open
 ```
 
-The version should be **0.2.3**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
+The version should be **0.3.0**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
 
 If working from a GitHub source download instead, run `python -m pip install .` from its project folder in place of the wheel-install command. The other commands are the same.
 
@@ -73,3 +73,14 @@ The first PNG/SVG is the overview; `_page_002` and later files contain continuat
 Keep the results folder. Share the exact message, installed version, operating system, and the relevant `status.json` or `mafft.log`. For a visual problem, a screenshot of the affected page helps. Use a non-confidential example when sharing inputs or outputs.
 
 When reporting a usability problem, identify the step involved: selecting files, choosing the residue window, opening a PDF, or filtering records in Excel. Include the expected behavior and what happened instead.
+
+
+## Tree-family acceptance checks
+
+Run `flutrees --demo --tree-mode all --threads 1 --open`. Confirm frequency, balanced, and diversity directories under `trees/`, a comparison section in HTML, and Tree Comparison / Tree Groups / All Membership sheets in Excel. Every mode must assign every input record to exactly one terminal full-tree group. Root-level tree files mirror frequency for this command.
+
+Check `provenance.json` for the MAFFT version, exact command including `--threadit 0`, alignment checksum, and analysis ID. Compare `method.json` in all three mode folders: all must refer to that same analysis ID. Do not expect the example's three views necessarily to differ; use the independent strategy tests for a deliberately discriminating fixture.
+
+For your own data, `--reference-id` must identify exactly one original FASTA record. Repeat a small run into a different output folder with the same environment and settings; verify the alignment checksum and analytical fingerprint. This checks local repeatability, not cross-platform equivalence.
+
+The README contains alternative conda/Miniconda and uv instructions alongside the original venv workflow. Choose one environment. Downloading an installer is not evidence of successful installation; verify both `mafft --version` and `flutrees --version` before analysis.

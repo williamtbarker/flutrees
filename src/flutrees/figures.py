@@ -101,12 +101,13 @@ def tree_figure(nodes, total, title, page_number, page_map):
     return fig
 
 
-def write_tree_figures(outdir, tree, name):
+def write_tree_figures(outdir, tree, name, mode=""):
+    title = (mode.title() + " - " if mode else "") + name.replace("_", " ").title()
     pages = tree_pages(tree)
     page_map = {nodes[0].node_id: i for i, nodes in enumerate(pages, 1)}
     with PdfPages(outdir / f"{name}.pdf") as pdf, matplotlib.rc_context({"svg.fonttype": "none"}):
         for i, nodes in enumerate(pages, 1):
-            fig = tree_figure(nodes, tree.support, name.replace("_", " ").title(), i, page_map)
+            fig = tree_figure(nodes, tree.support, title, i, page_map)
             stem = name if i == 1 else f"{name}_page_{i:03d}"
             try:
                 pdf.savefig(fig)

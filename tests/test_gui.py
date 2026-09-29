@@ -28,7 +28,7 @@ def view():
     ttk = SimpleNamespace(
         **{
             name: Mock(side_effect=lambda *a, **k: Mock())
-            for name in ["Frame", "Label", "Button", "Entry"]
+            for name in ["Frame", "Label", "Button", "Entry", "Combobox"]
         }
     )
     dialogs = (Mock(), Mock())

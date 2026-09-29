@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.0 - 2026-09-29
+
+### Added
+
+- Frequency (legacy), balanced, and cross-position diversity split strategies with shared uncertainty-aware eligibility rules.
+- `--tree-mode` and desktop selection of one view or all views from a single alignment.
+- Named tree-family folders, mode-aware group assignments, comparison and mutation-use tables, expanded all-mode workbooks, and multi-view HTML/PDF reports.
+- Unique original-record reference selection through `--reference-id` and the desktop window.
+- Structured tool/version/command provenance and content-based analysis fingerprints.
+- Frozen v0.2.3 tree hashes, independent strategy oracles, property-based tests, and a reproducible tree-construction benchmark.
+- Complete venv/pip, conda/Miniconda, and uv installation/run examples.
+
+### Changed
+
+- Disable multithreaded MAFFT iterative refinement by default with `--threadit 0`; retain the older flags through `--legacy-alignment`.
+- Normalize unsafe, reserved, Unicode-equivalent, and overlong output names, with preflight collision detection.
+- Require every requested mode and continuation image before reporting completion.
+- Retain root-level filenames as primary-view compatibility outputs; all-mode runs use frequency as the primary view.
+
+### Compatibility
+
+- The frequency split rule, encounter-order ties, thresholds, node numbering, and membership semantics are unchanged for the same mutation observations.
+- Different alignment settings can change observations; use matched tool versions and `--legacy-alignment` when comparing historical analyses.
+- Alternative tree views are exploratory, not evolutionary reconstructions or confidence measures.
+
+
 ## 0.2.3 — 2026-09-28
 
 - Revised installation and testing instructions for general use and clarified desktop labels.

@@ -2,6 +2,7 @@
 
 import hashlib
 import html
+import json
 import os
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -13,6 +14,8 @@ from Bio.SeqRecord import SeqRecord
 
 from . import __version__
 from .config import RunConfig
+from .provenance import portable_name, analysis_provenance
+from .family import build_family, comparison_tables, write_family
 from .io_fasta import load_fasta_extract_all
 from .align_mafft import mafft_align, check_mafft
 from .mutations import choose_mode_reference, call_mutations, mutation_counts
@@ -34,10 +37,7 @@ from .exports import (
 
 
 def input_name(path):
-    name = path.stem.replace(" ", "_")
-    if name in {"", ".", ".."}:
-        raise ValueError("Input filename must have a usable name before its extension.")
-    return name
+    return portable_name(path.stem)
 
 
 def run_many(cfg, inputs, outdir, run_id, progress=print):
@@ -50,10 +50,13 @@ def run_many(cfg, inputs, outdir, run_id, progress=print):
         raise ValueError(
             "Input filenames would share an output folder. Give each FASTA file a distinct name."
         )
+    if portable_name(run_id) != run_id:
+        raise ValueError("Run ID must be a portable folder name: use letters, digits, underscores, or hyphens.")
     check_mafft(cfg.mafft)
     # Preflight every input before making any output folder.
     for fasta in inputs:
-        load_fasta_extract_all(fasta, cfg.start_residue, cfg.end_residue)
+        loaded = load_fasta_extract_all(fasta, cfg.start_residue, cfg.end_residue)
+        resolve_reference_id(cfg, loaded["metadata_df"])
     root = outdir / run_id
     root.mkdir(parents=True, exist_ok=False)
     links = []
@@ -79,7 +82,10 @@ def run_many(cfg, inputs, outdir, run_id, progress=print):
     file_count = sum(path.is_file() for path in root.rglob("*"))
     progress(f"Your output is {file_count} files. Datasets processed: {len(inputs)}.")
     progress(f"They live at this path: {root.resolve()}")
+    progress("Tree views: " + ", ".join(cfg.tree_modes()) + ". One shared alignment per dataset.")
     progress("In each dataset folder:")
+    progress("  trees/<mode>/ - named tree views and group assignments")
+    progress("  provenance.json - versions, exact MAFFT command, and content checksums")
     progress("  report.pdf - summary, mutation chart, and visual tree")
     progress("  tree_full.pdf / tree_pruned.pdf - full and simplified visual trees")
     progress("  tree_full.txt / tree_pruned.txt - complete plain-text tree traces")
@@ -124,13 +130,18 @@ def run_one(cfg: RunConfig, fasta: Path, run_root: Path, progress=print):
             "tree_full.png",
             "tree_pruned.png",
             "run_info.txt",
+            "provenance.json",
+            "output_manifest.json",
         )
         if not all((out / name).is_file() and (out / name).stat().st_size > 0 for name in required):
             raise ValueError(f"An output is missing or empty. Results are incomplete: {out}")
+        expected = json.loads((out / "output_manifest.json").read_text())["required"]
+        if not all((out / name).is_file() and (out / name).stat().st_size > 0 for name in expected):
+            raise ValueError("A tree-family output is missing or empty. Results are incomplete.")
     except (Exception, KeyboardInterrupt) as error:
         write_summary(out / "status.json", {"status": "failed", "error": str(error) or "Analysis interrupted."})
         raise
-    artifacts = {p.name: p.stat().st_size for p in out.iterdir() if p.name != "status.json"}
+    artifacts = {p.relative_to(out).as_posix(): p.stat().st_size for p in out.rglob("*") if p.is_file() and p.name != "status.json"}
     write_summary(
         out / "status.json", {"status": "complete", "artifacts": artifacts, "version": __version__}
     )
@@ -159,7 +170,7 @@ def _analyze(cfg, fasta, out, progress):
     )
     aligned = out / "aligned.fasta"
     progress("Aligning sequences with MAFFT. Large datasets may take several minutes...")
-    mafft_align(mafft_input, aligned, cfg.mafft, cfg.resolved_threads())
+    mafft_align(mafft_input, aligned, cfg.mafft, cfg.resolved_threads(), cfg.reproducible)
     aligned_records = list(SeqIO.parse(str(aligned), "fasta"))
     if sorted(r.id for r in aligned_records) != sorted(transport):
         raise ValueError("MAFFT output IDs do not match the input records.")
@@ -173,11 +184,16 @@ def _analyze(cfg, fasta, out, progress):
         rec.description = ""
         restored.append(rec)
     SeqIO.write(restored, str(aligned), "fasta")
-    ref_id, ref_seq = choose_mode_reference(aligned)
+    selected_id = resolve_reference_id(cfg, metadata)
+    if selected_id is None:
+        ref_id, ref_seq = choose_mode_reference(aligned)
+    else:
+        ref_id = selected_id
+        ref_seq = next(str(rec.seq) for rec in restored if rec.id == ref_id)
     mutations = call_mutations(aligned, ref_seq, cfg.start_residue)
     counts = mutation_counts(mutations)
     counts["fraction_of_input"] = counts["count"] / loaded["n_records"]
-    full = build_tree(mutations, cfg.max_depth, cfg.min_split, cfg.min_freq)
+    full = build_tree(mutations, cfg.max_depth, cfg.min_split, cfg.min_freq, strategy=cfg.tree_modes()[0])
     pruned = prune_tree(full, cfg.prune_cutoff)
     warnings = []
     if metadata.normalized_residues.sum():
@@ -203,7 +219,7 @@ def _analyze(cfg, fasta, out, progress):
     hidden = len(list(iter_nodes(full))) - len(list(iter_nodes(pruned)))
     if hidden:
         warnings.append(
-            f"Pruning hides {hidden} nodes with fewer than {cfg.prune_cutoff} records. The full tree retains every group."
+            f"{cfg.tree_modes()[0].title()} view: pruning hides {hidden} nodes with fewer than {cfg.prune_cutoff} records. The full tree retains every group."
         )
     if full.left is None:
         warnings.append(full.stop_reason)
@@ -213,7 +229,17 @@ def _analyze(cfg, fasta, out, progress):
         )
     if not warnings:
         warnings.append("No missing-residue, duplicate-ID, or pruning warnings were detected.")
+    provenance = analysis_provenance(cfg, out, hashlib.sha256(input_bytes).hexdigest(), ref_id, mutations)
+    if provenance["versions"]["mafft"] == "unavailable":
+        warnings.append("MAFFT version could not be read; executable, command, and alignment checksum are retained.")
     summary = {
+        "schema_version": 2,
+        "tree_strategy": cfg.tree_modes()[0],
+        "tree_modes": list(cfg.tree_modes()),
+        "reference_method": "explicit" if cfg.reference_id is not None else "modal",
+        "analysis_id": provenance["analysis_id"],
+        "mafft_version": provenance["versions"]["mafft"],
+        "alignment_sha256": provenance["alignment_sha256"],
         "input_name": fasta.name,
         "input_path": str(fasta.resolve()),
         "n_records": loaded["n_records"],
@@ -237,16 +263,32 @@ def _analyze(cfg, fasta, out, progress):
     write_tree(out / "tree_pruned.json", pruned)
     for view, tree in (("full", full), ("pruned", pruned)):
         write_text_tree(out / f"tree_{view}.txt", tree, summary, view)
-        write_dot_tree(out / f"tree_{view}.dot", tree)
+        write_dot_tree(out / f"tree_{view}.dot", tree, summary["tree_strategy"])
     group_assignments(full).to_csv(out / "group_assignments.tsv", sep="\t", index=False)
     write_node_summary(out / "node_summary.tsv", full, pruned)
     write_summary(out / "summary.json", summary)
-    write_pdf(out / "report.pdf", summary, counts, pruned)
-    write_tree_figures(out, full, "tree_full")
-    write_tree_figures(out, pruned, "tree_pruned")
-    write_workbook(out / "results.xlsx", summary, metadata, mutations, counts, full, pruned)
-    write_html(out / "START_HERE.html", summary, full, pruned, metadata)
+    write_summary(out / "provenance.json", provenance)
+    write_tree_figures(out, full, "tree_full", summary["tree_strategy"])
+    write_tree_figures(out, pruned, "tree_pruned", summary["tree_strategy"])
+    family = build_family(cfg, mutations, full, pruned)
+    tables = comparison_tables(family)
+    expected = write_family(out, family, summary, tables)
+    write_pdf(out / "report.pdf", summary, counts, pruned, family=family)
+    write_workbook(out / "results.xlsx", summary, metadata, mutations, counts, full, pruned,
+                   extra_sheets=tables if cfg.tree_mode != "frequency" else None)
+    write_html(out / "START_HERE.html", summary, full, pruned, metadata, family=family, comparisons=tables["Tree Comparison"])
+    write_summary(out / "output_manifest.json", {"required": expected})
     (out / "run_info.txt").write_text(
         f"JOB={os.environ.get('SLURM_JOB_ID', '')}\nTASK={os.environ.get('SLURM_ARRAY_TASK_ID', '')}\nVERSION={__version__}\n",
         encoding="utf-8",
     )
+
+
+def resolve_reference_id(cfg, metadata):
+    """Select an unambiguous original input ID before alignment or publication."""
+    if cfg.reference_id is None:
+        return None
+    matches = metadata.loc[metadata.original_id == cfg.reference_id, "record_id"]
+    if len(matches) != 1:
+        raise ValueError(f"Reference ID {cfg.reference_id!r} must match exactly one original FASTA ID; found {len(matches)}.")
+    return matches.iloc[0]

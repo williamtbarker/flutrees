@@ -10,6 +10,7 @@ from .figures import tree_figure, tree_pages
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from .tree_build import to_dict, iter_nodes
+from .strategies import DESCRIPTIONS
 
 METHOD = (
     "Mutation decision tree, not a phylogeny. Counts represent sequence records, including duplicates. "
@@ -18,6 +19,13 @@ METHOD = (
     "Reference-gap columns are ignored (substitutions only). Splits at positions with missing or ambiguous "
     "observations in that node are withheld. Input sequences must share a consistent numbering convention."
 )
+
+
+def method_text(summary):
+    text = METHOD
+    if summary.get("reference_method") == "explicit":
+        text = text.replace("most common aligned sequence; ties use first input occurrence", "explicitly selected input record")
+    return text + " " + DESCRIPTIONS[summary.get("tree_strategy", "frequency")]
 
 
 def flat_mutations(mutation_df):
@@ -45,7 +53,7 @@ def write_text_tree(outpath, tree, summary, view):
         f"Input: {summary['input_name']}",
         f"Reference: {summary['reference_id']}",
         f"Window: {summary['start_residue']}-{summary['end_residue']}",
-        "", textwrap.fill(METHOD, 100), "",
+        "", textwrap.fill(method_text(summary), 100), "",
         "Read top to bottom; indentation shows parent/child relationships.",
         "Percentages use all input records. Match #node IDs to Excel or node_membership.tsv.",
         "",
@@ -69,7 +77,7 @@ def write_text_tree(outpath, tree, summary, view):
     outpath.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def write_dot_tree(outpath, tree):
+def write_dot_tree(outpath, tree, mode=""):
     """Export decision-tree nodes and edges in Graphviz DOT format."""
     lines = [
         "digraph FluTrees {",
@@ -86,6 +94,8 @@ def write_dot_tree(outpath, tree):
             if child is not None:
                 lines.append(f"  n{node.node_id} -> n{child.node_id};")
     lines.append("}")
+    if mode:
+        lines.insert(1, "  // Split strategy: " + mode)
     outpath.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -150,7 +160,7 @@ def write_summary(outpath: Path, summary):
     outpath.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
+def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned, extra_sheets=None):
     nodes, members = node_tables(full, pruned)
     records = metadata.merge(flat_mutations(mutations), on="record_id", validate="one_to_one")
     records = records.merge(group_assignments(full), on="record_id", validate="one_to_one")
@@ -165,7 +175,7 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
             "How to use",
             "Filter Records by full_group_id to select a final group; full_group_path traces every decision. Node Membership also includes intermediate groups.",
         ),
-        ("Interpretation", METHOD),
+        ("Interpretation", method_text(summary)),
     ]
     sheets = {
         "Summary": pd.DataFrame(summary_rows, columns=["Item", "Value"]),
@@ -176,6 +186,8 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
         "QC": pd.DataFrame({"Note": summary["warnings"]}),
         "Parameters": pd.DataFrame(list(summary["config"].items()), columns=["Parameter", "Value"]),
     }
+    if extra_sheets is not None:
+        sheets.update(extra_sheets)
     with pd.ExcelWriter(
         outpath,
         engine="xlsxwriter",
@@ -207,7 +219,7 @@ def write_workbook(outpath, summary, metadata, mutations, counts, full, pruned):
                 ws.set_row(6, 135)
 
 
-def write_pdf(pdf_path, summary, mut_counts, tree_pruned):
+def write_pdf(pdf_path, summary, mut_counts, tree_pruned, family=None):
     with PdfPages(pdf_path) as pdf:
         fig = plt.figure(figsize=(8.5, 11))
         lines = [
@@ -216,11 +228,15 @@ def write_pdf(pdf_path, summary, mut_counts, tree_pruned):
             f"Window: {summary['start_residue']}-{summary['end_residue']}",
             f"Reference: {summary['reference_id']}",
             "",
-            METHOD,
+            method_text(summary),
             "",
             "Quality and interpretation:",
             *summary["warnings"],
         ]
+        if len(summary.get("tree_modes", [])) > 1:
+            lines.extend(["", "Tree views share one alignment and mutation call set:"])
+            lines.extend(DESCRIPTIONS[mode] for mode in summary["tree_modes"])
+            lines.append("These exploratory views are not competing evolutionary reconstructions or confidence estimates.")
         wrapped = [part for line in lines for part in (textwrap.wrap(str(line), 85) or [""])]
         for offset in range(0, len(wrapped), 45):
             fig.text(
@@ -247,14 +263,14 @@ def write_pdf(pdf_path, summary, mut_counts, tree_pruned):
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
-        pages = tree_pages(tree_pruned)
-        mapping = {nodes[0].node_id: i for i, nodes in enumerate(pages, 1)}
-        for i, nodes in enumerate(pages, 1):
-            fig = tree_figure(
-                nodes, tree_pruned.support, "Pruned mutation decision tree", i, mapping
-            )
-            pdf.savefig(fig)
-            plt.close(fig)
+        views = family or {summary.get("tree_strategy", "frequency"): (tree_pruned, tree_pruned)}
+        for mode, (_, tree) in views.items():
+            pages = tree_pages(tree)
+            mapping = {nodes[0].node_id: i for i, nodes in enumerate(pages, 1)}
+            for i, nodes in enumerate(pages, 1):
+                fig = tree_figure(nodes, tree.support, f"{mode.title()}: Pruned mutation decision tree", i, mapping)
+                pdf.savefig(fig)
+                plt.close(fig)
 
 
 STYLE = """body{font:17px system-ui,sans-serif;color:#163849;background:#f5f8fa;max-width:1100px;margin:auto;padding:32px}
@@ -266,7 +282,7 @@ img{max-width:100%}.note{color:#48616e;font-size:15px}.records{max-height:260px;
 @media print{details{break-inside:avoid}nav{display:none}}"""
 
 
-def write_html(outpath, summary, full, pruned, metadata):
+def write_html(outpath, summary, full, pruned, metadata, family=None, comparisons=None):
     def esc(value):
         return html.escape(str(value), quote=True)
 
@@ -304,11 +320,22 @@ def write_html(outpath, summary, full, pruned, metadata):
         '<p>In Excel Records, filter <strong>full_group_id</strong> to select a final group; '
         '<strong>full_group_path</strong> shows every decision leading to it. These assignments are also in '
         '<a href="group_assignments.tsv">group_assignments.tsv</a>. Group IDs are local to this run and can change between runs.</p></section>'
-        f"<section><h2>How to interpret this run</h2><p>{esc(METHOD)}</p><p>Window: {summary['start_residue']}–{summary['end_residue']}. "
+        f"<section><h2>How to interpret this run</h2><p>{esc(method_text(summary))}</p><p>Window: {summary['start_residue']}–{summary['end_residue']}. "
         f"Reference record: {esc(summary['reference_id'])}</p><ul>{warnings}</ul></section>"
         '<section><h2>Tree overview</h2><img src="tree_pruned.svg" alt="Pruned mutation decision tree overview"></section>'
         f'<h2 id="pruned">Simplified tree</h2>{node_html(pruned)}<h2 id="full">Full tree</h2>{node_html(full)}'
         '<p class="note">The workbook Node Membership sheet connects each node ID to its records. The JSON, TSV, '
         "and FASTA files retain the underlying data. This page works offline without uploading sequences.</p></body></html>"
     )
+    if family is not None:
+        panels = ['<section><h2>Compare tree views</h2><p>These exploratory views share one alignment, reference, and set of mutation observations. Differences reflect split rules, not evolutionary histories or confidence estimates. Root-level tree files use the primary mode shown above. Group IDs are local to each mode.</p>']
+        if comparisons is not None:
+            panels.append(comparisons.to_html(index=False, escape=True, border=0))
+        for mode, (mode_full, mode_pruned) in family.items():
+            panels.append(f'<h3>{esc(DESCRIPTIONS[mode])}</h3><p><a href="trees/{mode}/tree_full.pdf">Full PDF</a> | <a href="trees/{mode}/tree_pruned.pdf">Simplified PDF</a> | <a href="trees/{mode}/tree_full.txt">Text trace</a> | <a href="trees/{mode}/group_assignments.tsv">Group assignments</a></p>')
+            if mode != summary.get("tree_strategy", "frequency"):
+                panels.append(node_html(mode_pruned))
+                panels.append('<details><summary>Full ' + esc(mode) + ' tree</summary>' + node_html(mode_full) + '</details>')
+        panels.append('<p>Cross-mode tables: <a href="tree_comparison.tsv">Tree comparison</a>, <a href="tree_groups.tsv">tree groups</a>, <a href="mutation_use.tsv">mutation use</a>. In multi-mode workbooks, use Tree Groups and All Membership with the mode column.</p></section>')
+        document = document.replace('<section><h2>Tree overview', "".join(panels) + '<section><h2>Tree overview')
     outpath.write_text(document, encoding="utf-8")

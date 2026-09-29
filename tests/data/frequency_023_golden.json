@@ -1,0 +1,276 @@
+{
+  "baseline_commit": "5683105e015e19ccaa5744789de9ad8941331975",
+  "source_sha256": "ccee90002dc4f9a20b989c9a0a1d2b8ea17cc5716831f17d4d3e72b0c12facc6",
+  "cases": [
+    {
+      "seed": 0,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 2,
+        "min_freq": 0
+      },
+      "tree_sha256": "ea98caa77ba56cecda9a87ddfe894751062a0ba3392f3dc2bf05b04921a0edfc"
+    },
+    {
+      "seed": 1,
+      "settings": {
+        "max_depth": 2,
+        "min_split": 3,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "0e6327b0639f01aa358f1e8d93d271b397f3858151962962d48100c908b2068a"
+    },
+    {
+      "seed": 2,
+      "settings": {
+        "max_depth": 5,
+        "min_split": 2,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "2c51ef149e370458eff637d3e014855a2beb32a19af545f9a784b70fbddc99e4"
+    },
+    {
+      "seed": 3,
+      "settings": {
+        "max_depth": 8,
+        "min_split": 2,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "a978e929391715383da0e45b3afbf721731bac34a1b15046fd43933b755b04d5"
+    },
+    {
+      "seed": 4,
+      "settings": {
+        "max_depth": 4,
+        "min_split": 1,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "e6226b5b8b52075e5d18fc9321eb8a6e591717fba85c9de0737cd33f585f151e"
+    },
+    {
+      "seed": 5,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 3,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "dcf2fb3d6de3978965fcca790f9ce9c033d1e3c1e37af082f91a39ebb7b67706"
+    },
+    {
+      "seed": 6,
+      "settings": {
+        "max_depth": 7,
+        "min_split": 3,
+        "min_freq": 0
+      },
+      "tree_sha256": "d6eef2be9464e3f62b5d22782fc14103756eaba75bc9a73b8a51d36bcf921a28"
+    },
+    {
+      "seed": 7,
+      "settings": {
+        "max_depth": 8,
+        "min_split": 2,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "9ecc9758f6841b2e70fd37485ad59efdf29198c9fc222baade367b7ef7dbfe61"
+    },
+    {
+      "seed": 8,
+      "settings": {
+        "max_depth": 3,
+        "min_split": 1,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "8e364f5fdd03810f0d5c02b65cd5b56107378c741b59786b4100776d51b5b198"
+    },
+    {
+      "seed": 9,
+      "settings": {
+        "max_depth": 5,
+        "min_split": 2,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "c6e0b7d06baa5ad609b9a7c9e53797547261d768638fba2cd558763a3e0a6f9d"
+    },
+    {
+      "seed": 10,
+      "settings": {
+        "max_depth": 7,
+        "min_split": 3,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "d6eef2be9464e3f62b5d22782fc14103756eaba75bc9a73b8a51d36bcf921a28"
+    },
+    {
+      "seed": 11,
+      "settings": {
+        "max_depth": 2,
+        "min_split": 2,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "4e50cd2190d24b972a4b490bc2bc947c165a3fd06060b845f1dad07ef16f46c5"
+    },
+    {
+      "seed": 12,
+      "settings": {
+        "max_depth": 7,
+        "min_split": 1,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "05c6ae1c39273004176ef2839e6d3741d95b4e9f8d455ee8711a125183182ed4"
+    },
+    {
+      "seed": 13,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 2,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "7b6b0f4896671049c49b2db7e18a12117c0c563451ab58ced138e728ff37e5b4"
+    },
+    {
+      "seed": 14,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 1,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "c553b6860ce0b3e5d4441e735e9880c4503371511a8f5d752f4a3684cc583641"
+    },
+    {
+      "seed": 15,
+      "settings": {
+        "max_depth": 6,
+        "min_split": 1,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "76879941a5b47e6c4ed1f3322f9cd889d79babc113cf7d33a728905cb73e1d3c"
+    },
+    {
+      "seed": 16,
+      "settings": {
+        "max_depth": 6,
+        "min_split": 1,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "5880663d98b252c6eb4e1c2191f3520058b5a9a7a7dc9c5d8280f9db8930e18c"
+    },
+    {
+      "seed": 17,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 2,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "112a1aa513763f6879c0d3d1ceb28850e72bea15d011b80cded6786e7b928c8f"
+    },
+    {
+      "seed": 18,
+      "settings": {
+        "max_depth": 1,
+        "min_split": 1,
+        "min_freq": 0
+      },
+      "tree_sha256": "b1c95d0355d757f76065f4e29863ff5cf1db1395e3782bc68bcf8524b6eaa461"
+    },
+    {
+      "seed": 19,
+      "settings": {
+        "max_depth": 7,
+        "min_split": 2,
+        "min_freq": 0
+      },
+      "tree_sha256": "ff758dc1bd221a6d0e2769b60a20a52b9d2c3e9b4cbd89e1d7a993b423099fa9"
+    },
+    {
+      "seed": 20,
+      "settings": {
+        "max_depth": 7,
+        "min_split": 3,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "4a0eeb16f66ac8db7cbce085998c75057998076b57d6dded17fe57fab1bf0970"
+    },
+    {
+      "seed": 21,
+      "settings": {
+        "max_depth": 4,
+        "min_split": 1,
+        "min_freq": 0
+      },
+      "tree_sha256": "a05fdde7c258c33c4bbd90d3d527b52fe4db0ed62d9ef9082d03c0fafac47349"
+    },
+    {
+      "seed": 22,
+      "settings": {
+        "max_depth": 0,
+        "min_split": 1,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "2adfc5bdd910991f9fbea122854f1e8384dba020f46f086112b90459981d62b6"
+    },
+    {
+      "seed": 23,
+      "settings": {
+        "max_depth": 6,
+        "min_split": 2,
+        "min_freq": 0
+      },
+      "tree_sha256": "db9fef63a8655458845abbceb270f5db2d400f535cbd95e4b8b038791cc514a9"
+    },
+    {
+      "seed": 24,
+      "settings": {
+        "max_depth": 2,
+        "min_split": 3,
+        "min_freq": 0
+      },
+      "tree_sha256": "2f3c53033075ffef17ca071f36259b5470bc12b659b05b9bfa9472103e73d30e"
+    },
+    {
+      "seed": 25,
+      "settings": {
+        "max_depth": 8,
+        "min_split": 1,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "786f1826b05d181ee7773a9394a0d6b30b945f40c9d9b8a66bba6d6d03342b3a"
+    },
+    {
+      "seed": 26,
+      "settings": {
+        "max_depth": 6,
+        "min_split": 1,
+        "min_freq": 0
+      },
+      "tree_sha256": "7423b1df67880dc42e09293052be09f8f409ad2e5d599c501cc3b5b4ec665d73"
+    },
+    {
+      "seed": 27,
+      "settings": {
+        "max_depth": 2,
+        "min_split": 2,
+        "min_freq": 0.5
+      },
+      "tree_sha256": "687040336b5fce1e975d433ec6dc46389a46227d08c9b1552035a3f58bebdd96"
+    },
+    {
+      "seed": 28,
+      "settings": {
+        "max_depth": 3,
+        "min_split": 1,
+        "min_freq": 0.1
+      },
+      "tree_sha256": "6c6bedeff306f88cdf1609522786cb98701e9d140e1ea93b3b2f3cfa4f8b01cd"
+    },
+    {
+      "seed": 29,
+      "settings": {
+        "max_depth": 3,
+        "min_split": 2,
+        "min_freq": 0.07
+      },
+      "tree_sha256": "bcea42b6fd59a8617f83eefe27490c7fcc620bab5a685b878870e1dadb452278"
+    }
+  ]
+}
