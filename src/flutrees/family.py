@@ -1,12 +1,14 @@
 """Aligned-data tree families, comparison tables, and portable tree artifacts."""
 
 import shutil
+from typing import Any
 
 import pandas as pd
 
 from .exports import (group_assignments, node_tables, write_dot_tree, write_node_summary,
                       write_summary, write_text_tree, write_tree)
 from .figures import tree_pages, write_tree_figures
+from .layout import FigureStyle, FIGURE_FIELDS
 from .strategies import DESCRIPTIONS, STRATEGY_VERSION
 from .tree_build import build_tree, iter_nodes, prune_tree
 
@@ -23,7 +25,8 @@ def build_family(cfg, mutations, primary_full, primary_pruned):
 
 
 def comparison_tables(family):
-    comparisons, assignments, node_frames, member_frames, uses = [], [], [], [], []
+    comparisons, assignments, node_frames, member_frames = [], [], [], []
+    uses: list[dict[str, Any]] = []
     for mode, (full, pruned) in family.items():
         nodes = list(iter_nodes(full))
         leaves = [node for node in nodes if node.left is None and node.right is None]
@@ -38,7 +41,7 @@ def comparison_tables(family):
         node_df, member_df = node_tables(full, pruned)
         node_frames.append(node_df.assign(mode=mode))
         member_frames.append(member_df.assign(mode=mode))
-        used = {}
+        used: dict[str, dict[str, Any]] = {}
         for node in nodes:
             if node.left is not None:
                 label = node.left.label
@@ -86,7 +89,8 @@ def write_family(out, family, summary, tables):
                 write_tree(destination / f"tree_{view}.json", tree)
                 write_text_tree(destination / f"tree_{view}.txt", tree, mode_summary, view)
                 write_dot_tree(destination / f"tree_{view}.dot", tree, mode)
-                write_tree_figures(destination, tree, f"tree_{view}", mode)
+                write_tree_figures(destination, tree, f"tree_{view}", mode,
+                                   FigureStyle(**{k: v for k, v in summary["config"].items() if k in FIGURE_FIELDS}))
             expected.extend(f"trees/{mode}/{path}" for path in paths)
         group_assignments(full).to_csv(destination / "group_assignments.tsv", sep="\t", index=False)
         write_node_summary(destination / "node_summary.tsv", full, pruned)

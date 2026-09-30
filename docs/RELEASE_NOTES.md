@@ -1,26 +1,32 @@
-# FluTrees 0.3.1
+# FluTrees 0.3.2
 
-Completes the 0.3 release family's compatibility and acceptance checks while retaining its three complementary tree views. This patch supersedes 0.3.0; its published tag and assets remain unchanged.
+Adds complete desktop parameter controls and an adjustable tree viewer. The GUI and CLI continue to use the same analysis pipeline.
 
-## Download and start
+## Added
 
-Download `FluTrees_v0.3.1_Test_Kit.zip`, extract it, and open `START_HERE.html`. The kit contains the installable wheel, synthetic/public HA examples with all three views, complete installation instructions, and the actual validation evidence from this build. Python 3.9 or newer and MAFFT are required for new analyses; neither is bundled. Existing reports can be viewed without installing the software.
+- Editable Max depth, Min split, Min freq, Run ID, pruning cutoff, CPU threads, alignment profile, and MAFFT executable in the desktop.
+- Analysis, Advanced, Tree viewer, and Run log tabs; file add/remove/clear controls; quoted CLI commands; persistent action and status controls.
+- Tree page width and height, horizontal and vertical node spacing, and branch weight in both GUI and CLI.
+- Saved-run inspection, continuation-page navigation, automatic fitting, whole-page preview, zoom/pan, and single-page PNG/SVG/PDF export without realignment.
+- A GUI quickstart covering the included example, laboratory inputs, analysis settings, results, figure layout, and saved runs; setup instructions reuse working prerequisites.
 
-The wheel, source archive, example PDF, and release checksums are available separately. The README provides venv/pip, Anaconda Miniconda, and uv workflows, including the installer download commands.
+## Fixed
 
-## Changes
+- Node overlap and clipping at tested page-size and spacing extremes through measured label layout.
+- Stale previews after invalid layout changes, clipboard and worker-start failures, malformed saved-run handling, and Tk cleanup between window lifecycles.
+- Invalid Python API numeric inputs, including Booleans in integer fields and nonfinite frequency or layout values.
+- Native desktop test selection on macOS and Windows; theme checks now cover native and fallback styles independently.
 
-- Frequency-only runs now retain the historical MAFFT flags by default, in addition to the unchanged frequency split rule. Alternative/all modes default to reproducible refinement. Explicit `--reproducible` and `--legacy-alignment` override either default; all-mode trees still share one alignment.
-- Exported full and pruned JSON trees can be reloaded with `flutrees.tree_io.read_tree`, with structural and record-membership validation and reconstructed path state.
-- Oversized Excel tables continue on numbered worksheets. Cell strings exceeding the format limit fail with an explanation instead of being silently truncated.
-- Release acceptance now includes 5,000 generated datasets across all modes, twelve differential CLI cases against pinned v0.2.3 source, JSON round trips, and the actual Excel worksheet row boundary.
-- Six complete HA-input/real-MAFFT/all-view/report runs cover 100 through 25,000 records, with conservation checks, stage timings, and resource records. Eighteen repeated alignment runs quantify legacy/reproducible behavior and cost.
-- Separate isolated jobs execute the actual README venv, curl/Miniconda, and curl/uv command blocks. Their transcripts, hashes, and completed example records are included in the kit.
+## Compatibility
 
-Frequency, balanced, diversity, and `--tree-mode all` remain available through the CLI and desktop window. Existing reference selection, input integrity, portable names, provenance, comparisons, and completion protections remain in place.
+Existing CLI flags, analytical defaults, alignment profiles, mutation rules, tree strategies, memberships, and scientific data schemas are preserved. Configuration records gain five presentation fields, excluded from analytical fingerprints. Figure appearance changes with the new fitting and layout controls.
 
-## Release gates and interpretation
+Frequency-only runs retain historical alignment defaults; alternative/all views retain reproducible refinement. The complete parameter reference is in `docs/GUI_CLI_PARAMETERS.md`.
 
-Publication requires the Linux Python 3.9/3.11/3.13 tests with exact 100% application statement and branch coverage, real MAFFT, desktop/Xvfb, Chromium, Graphviz, clean-wheel examples, all installation checks, all six pipeline sizes, alignment comparisons, and verified packaging. No coverage exclusions or reduced thresholds were introduced.
+## Installation and validation
 
-The large workload repeats unmodified public HA records with unique IDs; it is not 25,000 independent biological samples. Tests establish the specified behavior under tested environments, not clinical validity, phylogeny, standardized HA numbering, universal capacity, or equivalence across different dependencies. Native Windows/macOS desktop installation remains outside the Linux matrix. See `docs/ACCEPTANCE.md` and `docs/VALIDATION_0.3.1.md` for the exact contracts.
+Download `FluTrees_v0.3.2_Test_Kit.zip`, extract it, and open `START_HERE.html`. Downloads also include the wheel, source archive, example PDF, and checksums. New analyses require Python 3.9 or newer and MAFFT; the desktop also requires Tk.
+
+Publication requires the Linux Python 3.9/3.11/3.13/3.14 matrix, exact 100% application statement/branch coverage, static checks, real MAFFT, desktop/browser/export tests, installed-wheel execution, three installer checks, workloads through 25,000 records, and alignment comparisons. The Test Kit contains evidence from its actual release build. Native Windows/macOS acceptance is separate from Linux CI.
+
+See `docs/MAINTAINER_RELEASE.md` for the testing and publication procedure, `docs/VALIDATION_0.3.2.md` for validation scope, and `docs/MAINTENANCE.md` for dependency servicing.

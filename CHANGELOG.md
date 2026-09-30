@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.2 - 2026-09-30
+
+- Add a step-by-step GUI quickstart and Test Kit walkthrough; separate application prerequisites from optional renderer and release tooling in maintainer setup.
+- Expose every existing analysis setting in the desktop, including Max depth, Min split, Min freq, Run ID, Prune cutoff, CPU threads, alignment profile, and MAFFT executable.
+- Organize the native GUI into Analysis, Advanced, Tree viewer, and Run log tabs with file add/remove/clear controls, full input locations, fixed action/status controls, and scrollable analysis settings.
+- Add quoted, copyable CLI commands and a session progress log. Lock configuration during execution and restore controls after completion or failure.
+- Validate numeric settings and portable run names before launching; preserve existing results when a chosen folder already exists. Reuse pipeline run-name validation.
+- Clarify fractional frequency, per-child eligibility, depth limits, and presentation-only pruning. Document full GUI/CLI parity and fixed scientific policies.
+- Extend GUI/CLI parameter, native desktop, command-quoting, failure-recovery, and output-equivalence tests. Preserve scientific algorithms, defaults, existing CLI flags, scientific data schemas, and existing release gates.
+
+- Add optional width/height, level/node gap, and branch-width controls to GUI/CLI, with one measured renderer for previews and tree figures. Record presentation settings without changing analytical identity.
+- Add completed-run loading, page navigation, fitted zoom/pan, and single-page PNG/SVG/PDF export. Bound preview inputs and raster allocation; preserve continuation pages.
+- Fix clipboard and worker-start recovery, stale previews after invalid layout, pending Tk callbacks, and repeated-window cleanup before background work. Strengthen runtime numeric types and add static checking plus Python 3.14 CI coverage.
+- Document adversarial review, layout invariants, and Python/MAFFT dependency servicing.
+
 ## 0.3.1 - 2026-09-29
 
 - Restore the historical alignment flag set for default frequency-only runs; use reproducible refinement by default for alternative/all views and record the effective override.

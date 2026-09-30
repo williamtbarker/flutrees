@@ -9,7 +9,7 @@ section{background:white;border:1px solid #d7e0e7;border-radius:8px;padding:22px
 a{color:#075e72}code{background:#edf3f5;padding:2px 5px}table{border-collapse:collapse;width:100%}td,th{padding:9px;border-bottom:1px solid #d7e0e7;text-align:left}
 </style>
 <h1>FluTrees test kit</h1>
-<p>Version 0.3.1: three-view example reports, installation files, and test instructions.</p>
+<p>Version 0.3.2: complete desktop parameter controls, adjustable tree layouts, three-view example reports, installation files, and test instructions.</p>
 <section>
 <h2>1. Preview the results</h2>
 <p>Open the <a href="examples/synthetic/example/START_HERE.html">synthetic example</a> or the <a href="examples/public/public_HA/START_HERE.html">public HA example</a>. No installation is needed to view these reports. Keep this folder together so its links work.</p>
@@ -26,11 +26,20 @@ a{color:#075e72}code{background:#edf3f5;padding:2px 5px}table{border-collapse:co
 <section>
 <h2>2. Install and run</h2>
 <p>Follow the <a href="TESTING_GUIDE.html">installation and testing guide</a>. The installable wheel is in <code>package</code>. Python 3.9 or newer and MAFFT are required; Python dependencies are downloaded during installation. MAFFT is installed separately.</p>
-<p>After installation, use <code>flutrees --demo --tree-mode all --open</code> for the included example, or <code>flutrees --gui</code> for desktop file selection. The desktop window requires Python with Tk support.</p>
+<p>Already installed? Activate the environment where you installed FluTrees and enter <code>flutrees --gui</code>. The desktop window requires Python with Tk support. Graphviz is not required for the GUI or its normal figure exports.</p>
+<ol>
+<li>On <strong>Analysis</strong>, click <strong>Use included example</strong>. In a newly opened window, leave the defaults and the blank Run ID unchanged.</li>
+<li>Click <strong>Analyze sequences</strong>. Check <strong>Run log</strong> for progress.</li>
+<li>When the status says Complete, click <strong>Open results</strong>, then select the example dataset. Start with its report and workbook.</li>
+<li>Open <strong>Tree viewer</strong> to inspect full or pruned trees. Change width, height, node gaps, or line width, then click <strong>Apply layout</strong>. Use <strong>Whole page</strong> to preview the exported page shape.</li>
+<li>Use <strong>Fit</strong>, zoom, and the page buttons to inspect the tree. <strong>Save page...</strong> exports one displayed page as PDF, SVG, or PNG without rerunning alignment; choose a new filename for the adjusted figure.</li>
+</ol>
+<p>The <a href="README.md">README's Quickstart: GUI Mode</a> explains how to run your own FASTA files, choose analysis settings, adjust figures, and reopen or share results. See the <a href="docs/GUI_CLI_PARAMETERS.md">GUI/CLI parameter map</a> for all settings and ranges.</p>
 </section>
 <section>
 <h2>3. Check an analysis</h2>
-<p><a href="docs/ACCEPTANCE.md">Release acceptance matrix</a> · <a href="docs/VALIDATION_0.3.1.md">Validation scope and evidence</a></p>
+<p><a href="docs/ACCEPTANCE.md">Release acceptance matrix</a> · <a href="docs/VALIDATION_0.3.2.md">Validation scope and evidence</a></p>
+<p><a href="docs/REVIEW_0.3.2.md">Adversarial review</a> · <a href="docs/MAINTENANCE.md">Maintenance and dependency servicing</a></p>
 <p>Follow the guide's output checklist, then run a small unaligned protein FASTA with known expected results. Confirm the reference and residue window. The default window is 84–284 inclusive.</p>
 <p>FluTrees builds mutation decision trees, not phylogenies. The example datasets are software test fixtures. Check the quality notes and coordinate conventions before interpreting laboratory data.</p>
 <p><a href="BUILD_INFO.txt">Version, source commit, and CI run</a> · <a href="SHA256SUMS.txt">File checksums</a></p>

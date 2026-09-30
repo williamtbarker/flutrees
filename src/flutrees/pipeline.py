@@ -14,7 +14,7 @@ from Bio.SeqRecord import SeqRecord
 
 from . import __version__
 from .config import RunConfig
-from .provenance import portable_name, analysis_provenance
+from .provenance import portable_name, analysis_provenance, validate_run_id
 from .family import build_family, comparison_tables, write_family
 from .io_fasta import load_fasta_extract_all
 from .align_mafft import mafft_align, check_mafft
@@ -43,15 +43,12 @@ def input_name(path):
 def run_many(cfg, inputs, outdir, run_id, progress=print):
     if not inputs:
         raise ValueError("Choose at least one protein FASTA file.")
-    if not run_id or run_id in {".", ".."} or any(c in run_id for c in "/\\:"):
-        raise ValueError("Run ID must be a folder name, without path separators or colons.")
+    validate_run_id(run_id)
     names = [input_name(p) for p in inputs]
     if len({n.casefold() for n in names}) != len(names):
         raise ValueError(
             "Input filenames would share an output folder. Give each FASTA file a distinct name."
         )
-    if portable_name(run_id) != run_id:
-        raise ValueError("Run ID must be a portable folder name: use letters, digits, underscores, or hyphens.")
     check_mafft(cfg.mafft)
     # Preflight every input before making any output folder.
     for fasta in inputs:
@@ -269,8 +266,8 @@ def _analyze(cfg, fasta, out, progress):
     write_node_summary(out / "node_summary.tsv", full, pruned)
     write_summary(out / "summary.json", summary)
     write_summary(out / "provenance.json", provenance)
-    write_tree_figures(out, full, "tree_full", summary["tree_strategy"])
-    write_tree_figures(out, pruned, "tree_pruned", summary["tree_strategy"])
+    write_tree_figures(out, full, "tree_full", summary["tree_strategy"], cfg.figure_style())
+    write_tree_figures(out, pruned, "tree_pruned", summary["tree_strategy"], cfg.figure_style())
     family = build_family(cfg, mutations, full, pruned)
     tables = comparison_tables(family)
     expected = write_family(out, family, summary, tables)

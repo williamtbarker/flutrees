@@ -1,4 +1,4 @@
-# FluTrees 0.3.1: installation and testing
+# FluTrees 0.3.2: installation and testing
 
 Start with the included example, then try one small protein FASTA you know well.
 
@@ -26,12 +26,12 @@ For the downloaded test kit, run these commands after opening Terminal in the ex
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install package/flutrees-0.3.1-py3-none-any.whl
+python -m pip install package/flutrees-0.3.2-py3-none-any.whl
 flutrees --version
 flutrees --demo --open
 ```
 
-The version should be **0.3.1**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
+The version should be **0.3.2**. Terminal will show progress and the results path; your browser should open the overview. Results go into a new folder under `runs` and never overwrite an earlier run.
 
 If working from a GitHub source download instead, run `python -m pip install .` from its project folder in place of the wheel-install command. The other commands are the same.
 
@@ -45,7 +45,13 @@ With the environment still activated:
 flutrees --gui
 ```
 
-Click **Use included example**, choose a results folder, then **Analyze sequences** and **Open results**. Next, choose one of your own small, unaligned amino-acid FASTA files. Check the residue window against that input's starting convention. The default is **84-284 inclusive**.
+On **Analysis**, click **Use included example**, choose a results folder, then **Analyze sequences** and **Open results**. The file table supports adding and removing individual datasets. **Advanced** contains MAFFT, threads, and alignment choices; **Run log** retains progress and submitted commands for the current session.
+
+After a default example succeeds, use a new Run ID and try Max depth = 1, Min split = 2, Min freq = 0.25, and Prune cutoff = 20. Select Tree view = all. Confirm these values in `summary.json` and the workbook Parameters sheet; all full trees must stop at depth 1. The frequency value is a fraction (0.25 = 25%), applied to each parent node. The pruning cutoff affects only simplified trees. Entering 5% or a depth above 20 should produce an error before analysis begins.
+
+Use **Copy CLI command** to inspect the equivalent invocation. It does not run anything. Commands target POSIX shells on macOS/Linux and PowerShell on Windows. A blank Run ID produces a new timestamp on each copy or analysis; use an explicit name if the exact folder name matters. Reusing a completed name must preserve the old run and ask for a new name.
+
+Resize the window and scroll Analysis as needed. Analyze/status/Open results must remain visible. During a run, fields should lock, progress should appear in Run log, and completion should unlock controls. Next, choose one of your own small, unaligned amino-acid FASTA files. Check the residue window against that input's starting convention. The default is **84-284 inclusive**.
 
 The command-line alternative is:
 
@@ -54,6 +60,10 @@ flutrees -i /path/to/your_proteins.fasta --open
 ```
 
 Use translated, unaligned proteins with consistent starting positions. Existing `-` alignment gaps are rejected. An internal `*` stop needs checking; a single terminal stop is removed and recorded. This software does not infer HA numbering conventions or automatically translate nucleotide input.
+
+In **Tree viewer**, choose each available full/pruned tree. Try Width = 9, Height = 12, Level gap = 2, Node gap = 3, and Line width = 2.5, then **Apply layout**. The tree should fit completely, with separated labels and branches. Enable Whole page to inspect the selected page aspect and print margins. Zoom in, drag to pan, then **Fit**. Change page on a large tree and confirm that zoom resets; all continuation pages remain accessible. Use **Save page** to export a new PNG/SVG/PDF outside the run folder. Reopen a completed run with **Open saved run** and repeat without realignment. Settings entered before a new analysis must appear in its configuration and tree exports; presentation changes must not change tree JSON or assignments.
+
+Try a root-only tree (Max depth = 0), a deeper tree, portrait/landscape pages, and the minimum window size. Enter a nonfinite layout value such as `nan`: it must show an error and disable saving a stale preview. Fit/zoom are bounded for desktop memory; extremely large saved JSON should give a clear limit message and leave complete PDF exports available.
 
 ## 4. What a successful test looks like
 
@@ -87,6 +97,6 @@ The README contains alternative conda/Miniconda and uv instructions alongside th
 
 ## Release acceptance evidence
 
-The Test Kit includes `docs/ACCEPTANCE.md` and `docs/VALIDATION_0.3.1.md`, with the completed build's test report, coverage counters, full HA pipeline measurements, alignment comparisons, and exact README installation transcripts under `validation/`. Large workbook tables continue on numbered sheets; include those sheets when counting all records.
+The Test Kit includes `docs/ACCEPTANCE.md` and `docs/VALIDATION_0.3.2.md`, with the completed build's test report, coverage counters, full HA pipeline measurements, alignment comparisons, and exact README installation transcripts under `validation/`. Large workbook tables continue on numbered sheets; include those sheets when counting all records.
 
 A default frequency-only run uses the historical alignment flags. An all-mode run uses reproducible refinement by default. To compare separate runs under the same alignment settings, explicitly pass `--reproducible` or `--legacy-alignment` to both. These choices are recorded in `summary.json` and `provenance.json`.

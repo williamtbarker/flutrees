@@ -4,8 +4,10 @@ import html
 import json
 import textwrap
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
+from .layout import FigureStyle, FIGURE_FIELDS
 from .figures import tree_figure, tree_pages
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -104,7 +106,7 @@ def write_dot_tree(outpath, tree, mode=""):
 
 def group_assignments(tree):
     """Exactly one terminal full-tree group and complete decision path per record."""
-    rows = []
+    rows: list[dict[str, Any]] = []
 
     def walk(node, path):
         path = path + [node.label]
@@ -123,7 +125,8 @@ def group_assignments(tree):
 
 
 def node_tables(tree_full, tree_pruned):
-    rows, members = [], []
+    rows: list[dict[str, Any]] = []
+    members: list[dict[str, Any]] = []
     for tag, tree in (("full", tree_full), ("pruned", tree_pruned)):
 
         def walk(node, parent_id, path, tag=tag, tree=tree):
@@ -277,7 +280,8 @@ def write_pdf(pdf_path, summary, mut_counts, tree_pruned, family=None):
             pages = tree_pages(tree)
             mapping = {nodes[0].node_id: i for i, nodes in enumerate(pages, 1)}
             for i, nodes in enumerate(pages, 1):
-                fig = tree_figure(nodes, tree.support, f"{mode.title()}: Pruned mutation decision tree", i, mapping)
+                fig = tree_figure(nodes, tree.support, f"{mode.title()}: Pruned mutation decision tree", i, mapping,
+                                  FigureStyle(**{k: v for k, v in summary["config"].items() if k in FIGURE_FIELDS}))
                 pdf.savefig(fig)
                 plt.close(fig)
 
