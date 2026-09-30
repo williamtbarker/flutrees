@@ -5,18 +5,108 @@
 
 FluTrees converts influenza HA protein FASTA files into interpretable **mutation decision trees**, PDF reports, an Excel workbook, and portable data files. Analysis runs locally; sequences are not uploaded.
 
-**Version 0.3.1 aligns each dataset once and can build three complementary tree views from the same records, reference, and mutation observations.** The original frequency-based split rule remains the default. These trees organize observed substitutions; they are **not phylogenetic reconstructions**.
+**Version 0.3.2 adds a complete desktop workspace with editable analysis settings, file management, progress logs, copyable CLI commands, and a fitted tree viewer with adjustable layout.** Each dataset is aligned once and can produce three complementary tree views from the same records, reference, and mutation observations. The original frequency-based split rule remains the default. These trees organize observed substitutions; they are **not phylogenetic reconstructions**.
+
+**Start here:** [Quickstart: GUI Mode](#quickstart-gui-mode) · [Installation](#installation-choose-one-environment) · [CLI and cluster workflows](#desktop-and-cluster-workflows) · [Troubleshooting](#troubleshooting)
+
+## Quickstart: GUI Mode
+
+Use the desktop window to select sequences, run an analysis, and adjust your tree figures. You do not need to write code. If FluTrees already opens on your computer, skip installation and start with the example below. Otherwise, complete [one installation method](#installation-choose-one-environment) first; the GUI needs Python with Tk support and the MAFFT aligner. Graphviz and developer testing tools are not required for this walkthrough.
+
+### 1. Open FluTrees
+
+Open Terminal, activate the environment where you installed FluTrees, and enter:
 
 ```bash
-flutrees --demo --tree-mode all --open
+flutrees --gui
 ```
 
-After installation, this command processes the bundled synthetic example and opens the results overview. For desktop file selection, run `flutrees --gui`.
+`flutrees-gui` opens the same window. With conda, activate your installation with `conda activate flutrees`. With the venv installation below, open the `flutrees` checkout folder in Terminal and run `source .venv/bin/activate` first. Use the environment you installed into, rather than creating a new one each time. Keep Terminal open while using the window.
+
+### 2. Try the included example
+
+Start with a newly opened window so the settings are at their defaults.
+
+1. On **Analysis**, click **Use included example**. The file list should show the bundled example, containing 48 synthetic protein records.
+2. Leave **Results folder** at its default, `FluTrees_results` in your home folder. Leave **Run ID** blank to create a new timestamped folder automatically.
+3. Leave the analysis settings unchanged: residues **84–284**, **frequency**, **Max depth 10**, **Min split 5**, **Min freq 0.05**, and **Prune cutoff 10**. Leave **Reference ID** blank.
+4. Click **Analyze sequences**. Check **Run log** for progress. The moving bar means the program is working; it is not a percentage complete. Controls unlock when the run finishes.
+5. When the status says **Complete**, click **Open results**. Your browser opens a local results page; click the example dataset to see its report, tree figures, and workbook.
+
+The example demonstrates four groups of 12 records. It is a software demonstration, not a biological reference panel. If you use **Use included example** later, it replaces the selected files and resets the residue window, but retains your other settings.
+
+### 3. Run your own sequences
+
+On **Analysis**, click **Clear** to remove the example, then **Add FASTA files...** to choose your data. Supply **unaligned HA protein sequences (amino acids)**, not nucleotide sequences or an already aligned FASTA. Put sequences you want compared together in one file: multiple selected files are analyzed as separate datasets.
+
+Choose a **Results folder** you can find again. Give the run a descriptive **Run ID**, such as `HA_batch1`, or leave it blank. Use a new name for each run; FluTrees never overwrites an existing run folder.
+
+Check **First residue** and **Last residue** before starting. The default is **84–284, inclusive**, counted from the first amino acid in each input sequence. FluTrees extracts this window before alignment; it does not automatically convert between full-length HA, mature HA, or H1/H3 numbering. Inputs should use the same starting convention.
+
+Leave **Reference ID** blank to use the most common aligned sequence. To select a reference yourself, enter its exact FASTA identifier: the text immediately after `>` up to the first space. That identifier must occur exactly once in each selected file.
+
+For your first analysis, keep the other defaults and click **Analyze sequences**. To adjust the grouping later:
+
+| GUI setting | What it controls | How to use it |
+|---|---|---|
+| **Tree view** | Which rule chooses each split. | Start with **frequency**. Choose **all** to compare frequency, balanced, and diversity trees from one alignment. See [Choose a tree view](#choose-a-tree-view) before interpreting their differences. |
+| **Max depth** | How many successive splits a path can contain. | Default **10**. Lower it for a shallower tree; **0** shows only the starting group. Raising it allows, but does not guarantee, more splits. |
+| **Min split** | Minimum number of records required in **each** child group. | Default **5**. Raise it to prevent splits that create very small groups. |
+| **Min freq** | Minimum fraction of the current parent group required in **each** child. | Default **0.05**, meaning **5%**. Enter a fraction, not `5`. Both this setting and Min split must be satisfied. |
+| **Prune cutoff** | Hides smaller groups in the simplified (`pruned`) view. | Default **10**. Changes the simplified display; the full tree and its record assignments are retained. |
+
+For example, with 200 records in a parent group, Min freq **0.05** requires at least 10 records in each child, even when Min split is **5**. These thresholds affect which groups can appear; a larger or more detailed tree is not automatically more biologically informative.
+
+The **Advanced** tab can stay at its defaults for this walkthrough. If you compare separate analyses, keep the reference, residue window, alignment profile, and thread count consistent. Full details and valid ranges are in the [parameter reference](docs/GUI_CLI_PARAMETERS.md).
+
+### 4. Read the results
+
+Click **Open results**, then select your dataset. Start with:
+
+| File | Use it for |
+|---|---|
+| **START_HERE.html** | Browse the analysis overview, quality notes, trees, and links to other outputs. |
+| **report.pdf** | Read the summary and simplified tree figures in a printable report. |
+| **results.xlsx** | Inspect records, mutations, group membership, quality checks, and the settings used. |
+| **tree_full.pdf** | Follow the complete tree, including continuation pages for larger trees. |
+
+Read a tree from left to right. A label such as **A123T** identifies a substitution relative to the selected reference; **Not A123T** is the other side of that split. Counts are sequence records, and percentages use all input records. They are not confidence scores. These are **mutation decision trees, not evolutionary trees**.
+
+### 5. Adjust the figure and save it
+
+Open **Tree viewer** and use the dropdown to choose a dataset, tree view, and `tree_full.json` or `tree_pruned.json`. The full tree retains all groups; the pruned tree is the simplified presentation.
+
+| Control | What to do |
+|---|---|
+| **Width / Height** | Set the page size in inches. Try width **12**, height **8** for landscape, or width **8**, height **12** for portrait. |
+| **Level gap** | Increase the horizontal gap between successive splits; try **1.5**. |
+| **Node gap** | Increase the vertical gap between node boxes; try **1.5**. |
+| **Line width** | Adjust branch thickness; the default is **1.5** points. |
+| **Apply layout** | Apply your changed values to the displayed page. |
+| **Whole page** | Show the page shape, title, and margins. Turn it off to focus on the tree itself. |
+| **Fit / Zoom + / Zoom -** | Fit the current page's tree to the window or inspect it more closely. Drag to pan when zoomed in. |
+| **Previous page / Next page** | Follow continuation pages when the tree is too large for one page. |
+| **Save page...** | Save the displayed page as PDF, SVG, or PNG. Choose a new filename or folder for your adjusted figure. |
+
+The viewer fits each page automatically. Increasing spacing within a fixed page can make labels smaller, so adjust width and height too when needed. Use **Whole page** to judge the exported proportions; zoom changes your screen view, not the exported page size.
+
+**Apply layout** and **Save page...** do not rerun alignment or change your scientific results. Saving exports **one page**, not the whole tree or report, and uses the last applied layout. To generate all tree pages and the report with a new layout, set the layout fields first, then run the analysis again with a new Run ID.
+
+### 6. Come back to a run or share it
+
+Your results remain on disk after you close FluTrees. To reopen the overview, open `START_HERE.html` inside your run folder. To adjust an old tree, choose **Tree viewer → Open saved run...** and select the **run folder** inside `FluTrees_results`, not the outer results folder or an individual dataset folder. The viewer uses the current layout fields when opening a saved run.
+
+To share results, copy or zip the **entire run folder** so its links and supporting files stay together. Recipients can open its HTML reports without installing FluTrees. Before sharing, check that the included sequence data and identifiers are appropriate for the recipient.
+
+**If something goes wrong:** a used Run ID needs a new name; a missing MAFFT error needs the aligner installed or its path entered under **Advanced → MAFFT executable**. For a root-only tree, inspect the full tree and quality notes before lowering thresholds. If controls are disabled, check **Run log** and wait for the active run to finish. See [Troubleshooting](#troubleshooting) for other cases.
 
 ## What changed in the 0.3 release family
 
 | Upgrade | Behavior |
 |---|---|
+| Desktop parameter access | Edit every existing analysis setting, including depth, split count, frequency, pruning, alignment, and a custom run name. |
+| Adjustable tree layout | Set aspect ratio, horizontal/vertical gaps, and branch weight; inspect fitted pages, zoom/pan, and save a restyled page without rerunning MAFFT. |
+| Desktop workflow | Add/remove files, use grouped Analysis/Advanced tabs, inspect the run log, and copy an equivalent CLI command. |
 | Frequency, balanced, and diversity trees | Choose one view or generate all three without repeating alignment. |
 | Legacy compatibility | Default frequency runs retain the v0.2.3 alignment flags and split rule. Differential CLI tests compare scientific outputs against pinned v0.2.3 source, in addition to frozen tree fixtures. |
 | Cross-view comparisons | Compare root splits, group counts, depth, pruning, mutation use, and per-record assignments in HTML, TSV, and Excel. |
@@ -45,14 +135,14 @@ sudo apt-get update
 sudo apt-get install -y mafft python3-venv python3-tk git curl
 ```
 
-On macOS with Homebrew already installed, use `brew install mafft` instead of `apt`. Use a Python installation with Tk for the desktop window. The CLI does not require Tk.
+On macOS with Homebrew already installed, check `mafft --version` first; if MAFFT is missing, use `brew install mafft` instead of `apt`. Use a Python installation with Tk for the desktop window; `python3 -m tkinter` opens a small test window when Tk is available. Close it before continuing. Retain working prerequisites instead of reinstalling them. The CLI does not require Tk.
 
 <!-- install-check: venv -->
 ```bash
 # Create a new checkout; do not run this inside an existing flutrees directory.
 git clone https://github.com/williamtbarker/flutrees.git
 cd flutrees
-git checkout "${FLUTREES_REF:-v0.3.1}"
+git checkout "${FLUTREES_REF:-v0.3.2}"
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -71,7 +161,7 @@ flutrees -i tests/data/public_HA.fasta --tree-mode all --threads 1 --outdir resu
 # Open the absolute START_HERE.html path printed by the CLI, or add --open.
 ```
 
-`FLUTREES_REF` is optional and selects another existing tag or commit. Without it, the checkout is pinned to v0.3.1. The existing `bash install_mafft.sh --dry-run` helper previews package-manager options; it does not install a package manager itself.
+`FLUTREES_REF` is optional and selects another existing tag or commit. Without it, the checkout is pinned to v0.3.2. The existing `bash install_mafft.sh --dry-run` helper previews package-manager options; it does not install a package manager itself.
 
 ### 2. Conda, with Anaconda's Miniconda installer
 
@@ -91,7 +181,7 @@ conda create -n flutrees --override-channels -c conda-forge -c bioconda \
 conda activate flutrees
 
 # Install the published wheel, or a local Test Kit wheel supplied through FLUTREES_PACKAGE:
-python -m pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.1/flutrees-0.3.1-py3-none-any.whl}"
+python -m pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.2/flutrees-0.3.2-py3-none-any.whl}"
 mafft --version
 flutrees --version
 flutrees --demo --tree-mode all --threads 1 --outdir results --run-id demo
@@ -129,7 +219,7 @@ mkdir -p "$HOME/flutrees-work"
 cd "$HOME/flutrees-work"
 uv venv --python 3.11 .venv
 source .venv/bin/activate
-uv pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.1/flutrees-0.3.1-py3-none-any.whl}"
+uv pip install "${FLUTREES_PACKAGE:-https://github.com/williamtbarker/flutrees/releases/download/v0.3.2/flutrees-0.3.2-py3-none-any.whl}"
 mafft --version
 flutrees --version
 flutrees --demo --tree-mode all --threads 1 --outdir results --run-id demo
@@ -141,16 +231,16 @@ See the [official uv instructions](https://docs.astral.sh/uv/getting-started/ins
 
 ### Install from the Test Kit
 
-Download `FluTrees_v0.3.1_Test_Kit.zip` from the [release](https://github.com/williamtbarker/flutrees/releases/tag/v0.3.1), extract it, and open `START_HERE.html`. It contains the installable wheel, example inputs, complete three-view reports, checksums, validation evidence, and acceptance instructions. Python and MAFFT are not bundled; previewing the reports requires neither.
+Download `FluTrees_v0.3.2_Test_Kit.zip` from the [release](https://github.com/williamtbarker/flutrees/releases/tag/v0.3.2), extract it, and open `START_HERE.html`. It contains the installable wheel, example inputs, complete three-view reports, checksums, validation evidence, and acceptance instructions. Python and MAFFT are not bundled; previewing the reports requires neither.
 
 Within an activated venv or conda environment:
 
 ```bash
-python -m pip install package/flutrees-0.3.1-py3-none-any.whl
+python -m pip install package/flutrees-0.3.2-py3-none-any.whl
 flutrees --demo --tree-mode all --threads 1 --open
 ```
 
-With uv, use `uv pip install package/flutrees-0.3.1-py3-none-any.whl` in the activated environment.
+With uv, use `uv pip install package/flutrees-0.3.2-py3-none-any.whl` in the activated environment.
 
 ## Choose a tree view
 
@@ -187,7 +277,18 @@ This is an exploratory association-based rule, not supervised information gain a
 
 ## Desktop and cluster workflows
 
-Run `flutrees --gui`, choose FASTA files or the included example, choose the results folder, and check the residue window. The **Tree view** selector offers all four CLI choices. **Reference ID** is optional; leave it empty for the modal reference. Click **Analyze sequences**, then **Open results**.
+Run `flutrees --gui` or `flutrees-gui`. The native desktop workspace uses the same analysis engine and configuration as the CLI.
+
+- **Analysis:** add multiple FASTA files, inspect their locations, remove selected files, or try the included example. Choose the results folder and optional Run ID; set the residue window, tree view, reference, Max depth, Min split, Min freq, and Prune cutoff.
+- **Advanced:** set the MAFFT executable, CPU threads, and alignment profile. Blank threads retain the SLURM/eight-thread default. Mode default retains legacy alignment for frequency-only runs and reproducible alignment for alternative/all views.
+- **Tree viewer:** set page width/height, level gap, node gap, and line width. Inspect full or pruned trees after a run, or open a saved completed run. Apply layout, preview the whole page or fit the tree itself, move between continuation pages, zoom, drag to pan, and save the displayed page as PNG/SVG/PDF.
+- **Run log:** see each session run's command, progress messages, results location, and errors. The action buttons and status remain visible while switching tabs. Analysis settings scroll in smaller windows.
+
+Click **Analyze sequences**, then **Open results**. Settings lock while a run is active and unlock afterward. Invalid values or an existing run name are rejected before starting. Pipeline preflight continues to check inputs, references, and MAFFT before creating a run folder. The progress bar indicates activity, not a percentage or estimated finish time.
+
+**Copy CLI command** copies the current settings without running an analysis. Commands are quoted for POSIX shells on macOS/Linux or PowerShell on Windows. Blank Run ID generates a new timestamp for each copy or analysis; specify a name if you need an exact folder name. The run log records the command actually submitted. Change the run name before repeating a completed command. The GUI's automatic names remain timestamp-based; the CLI retains its SLURM job-name convention.
+
+See the [complete GUI/CLI parameter map](docs/GUI_CLI_PARAMETERS.md) for defaults, ranges, and scientific interpretation. `--gui` opens the desktop with its own defaults; it does not prefill fields from additional CLI analysis flags.
 
 ```bash
 # Several independent datasets; each is aligned once:
@@ -203,6 +304,14 @@ flutrees -i HA.fasta --tree-mode frequency --legacy-alignment --threads 1
 Without `--threads`, FluTrees uses `SLURM_CPUS_PER_TASK` when valid, otherwise eight threads. SLURM defaults to `job<SLURM_JOB_ID>` as the run ID; otherwise a timestamp-based ID is generated. Existing run directories are never overwritten. Supply a new `--run-id` for reruns or multiple tasks sharing a job ID. Run IDs must be portable folder names.
 
 On a cluster, omit `--open` and `--gui`. Copy the **entire results folder** to your workstation for viewing. The CLI reports stages, generated modes, actual file count, absolute output path, and the first file to open.
+
+For a portrait tree export with more space between nodes:
+
+```bash
+flutrees -i HA.fasta --figure-width 9 --figure-height 12 --level-spacing 2 --node-spacing 2 --line-width 2
+```
+
+These presentation settings do not change scientific results. Each page is measured and fitted; large trees retain continuation pages. The viewer applies a bounded raster zoom and offers vector exports for closer inspection. See the [parameter map](docs/GUI_CLI_PARAMETERS.md) for ranges and preview limits, and the [maintenance assessment](docs/MAINTENANCE.md) for Python/MAFFT upgrade policy.
 
 ## Results: start with START_HERE.html
 
@@ -300,8 +409,10 @@ python benchmarks/benchmark_end_to_end.py --outdir validation/ha-performance
 python benchmarks/benchmark_alignment.py --outdir validation/alignment-comparison
 ```
 
-CI runs Python 3.9, 3.11, and 3.13 on Linux. It requires exact **100% statement and branch coverage of `src/flutrees`**, unchanged from the prior release. Tests include 30 frozen legacy tree hashes, 12 differential legacy/current CLI runs, independent position-level oracles for all modes, 5,000 Hypothesis-generated datasets and uncertainty masks, JSON reload/round trips, a real Excel worksheet-boundary test, real MAFFT, reference/error cases, interruption and missing-artifact failures, workbook/PDF contents, paginated figure geometry, native Graphviz rendering, a desktop example under Xvfb, Chromium report checks, and fresh-wheel execution.
+CI targets Python 3.9, 3.11, 3.13, and 3.14 on Linux, with application type checks and strict configuration/layout checks. It requires exact **100% statement and branch coverage of `src/flutrees`**, unchanged from the prior release. Tests include 30 frozen legacy tree hashes, 12 differential legacy/current CLI runs, independent position-level oracles for all modes, 5,000 Hypothesis-generated datasets and uncertainty masks, JSON reload/round trips, a real Excel worksheet-boundary test, real MAFFT, reference/error cases, interruption and missing-artifact failures, workbook/PDF contents, paginated figure geometry, native Graphviz rendering, a desktop example under Xvfb, Chromium report checks, and fresh-wheel execution.
 
-Coverage measures executed code, not scientific validity or absence of all defects. MAFFT, Tk, third-party libraries, installation helpers, and release tooling are outside the Python application coverage denominator. See [the acceptance matrix](docs/ACCEPTANCE.md) and [v0.3.1 validation scope](docs/VALIDATION_0.3.1.md). Release packages include the completed run's actual installer transcripts, benchmark measurements, test report, and coverage data. The [v0.3.0 validation record](docs/VALIDATION_0.3.0.md) is retained as historical documentation.
+Coverage measures executed code, not scientific validity or absence of all defects. MAFFT, Tk, third-party libraries, installation helpers, and release tooling are outside the Python application coverage denominator. See [the acceptance matrix](docs/ACCEPTANCE.md) and [v0.3.2 validation scope](docs/VALIDATION_0.3.2.md). Release packages include the completed run's actual installer transcripts, benchmark measurements, test report, and coverage data. The [v0.3.0 validation record](docs/VALIDATION_0.3.0.md) is retained as historical documentation.
+
+For the complete local checklist and GitHub publication sequence, see the [maintainer test and release procedure](docs/MAINTAINER_RELEASE.md).
 
 MIT License. See [LICENSE](LICENSE) and [CITATION.cff](CITATION.cff).

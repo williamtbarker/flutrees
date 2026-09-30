@@ -12,6 +12,7 @@ from importlib.metadata import version
 from . import __version__
 from .align_mafft import alignment_command, check_mafft
 from .strategies import STRATEGY_VERSION
+from .layout import FIGURE_FIELDS
 
 
 def portable_name(name):
@@ -26,6 +27,14 @@ def portable_name(name):
         suffix = hashlib.sha256(name.encode("utf-8")).hexdigest()[:12]
         name = name.encode("utf-8")[:100].decode("utf-8", errors="ignore") + "_" + suffix
     return name
+
+
+def validate_run_id(run_id: str) -> None:
+    """Apply the same folder-name rules to CLI, desktop, and API runs."""
+    if not isinstance(run_id, str) or not run_id or run_id in {".", ".."} or any(c in run_id for c in "/\\:"):
+        raise ValueError("Run ID must be a folder name, without path separators or colons.")
+    if portable_name(run_id) != run_id:
+        raise ValueError("Run ID must be a portable folder name: use letters, digits, underscores, or hyphens.")
 
 
 def sha256_file(path):
@@ -54,6 +63,8 @@ def analysis_provenance(cfg, out, input_sha256, reference_id, mutations):
                                 sort_keys=True, separators=(",", ":")).encode("utf-8")
     analytical_config = asdict(cfg)
     analytical_config.pop("mafft")  # installation path is not an analytical setting
+    for name in FIGURE_FIELDS:
+        analytical_config.pop(name)  # presentation cannot change the analytical identity
     analytical_config["threads"] = cfg.resolved_threads()
     analytical_config["reproducible"] = cfg.resolved_reproducible()
     identity = {

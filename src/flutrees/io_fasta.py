@@ -59,7 +59,7 @@ def load_fasta_extract_all(fasta: Path, start_residue: int, end_residue: int) ->
         # MAFFT drops '?' and rejects U/O in amino-acid mode. Preserve positions
         # as unknown observations instead of losing residues or changing numbering.
         normalized_residues = sum(sequence.count(c) for c in "?UO")
-        sequence = sequence.translate(str.maketrans({c: "X" for c in "?UO"}))
+        sequence = sequence.translate(str.maketrans("?UO", "XXX"))
         sid = r.id
         if sid in seen:
             k = 2

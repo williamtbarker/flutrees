@@ -15,7 +15,7 @@ The 0.3 release family is published only after the following technical checks su
 | Large output format integrity | Actual Excel row boundary; continued sheets; overlong cells fail visibly | `tests/test_large_exports.py` |
 | Complete HA pipeline at six dataset sizes | Real alignment and all exports at 100, 500, 1,000, 5,000, 10,000, 25,000 records; independent output conservation checks | `validation/acceptance/performance-*/` |
 | Complete README and three installation paths | Verbatim venv, actual curl/Miniconda, actual curl/uv blocks, installed-wheel analyses | `validation/acceptance/installer-*/` |
-| Existing test and coverage requirements | Linux Python 3.9/3.11/3.13, zero missing statements/branches, zero excluded lines | `validation/coverage-python311.json`, JUnit report, CI jobs |
+| Existing test and coverage requirements | Linux Python 3.9/3.11/3.13/3.14, zero missing statements/branches, zero excluded lines | `validation/coverage-python311.json`, JUnit report, CI jobs |
 | Visual/desktop/browser portability | PDF/SVG/PNG/DOT/XLSX content, Graphviz, Xvfb desktop, Chromium | Test and browser jobs |
 | Versioned customer package | Checked wheel/source, examples, instructions, all acceptance evidence, internal/external checksums | Test Kit, source archive, wheel, `BUILD_INFO.txt`, `SHA256SUMS.txt` |
 

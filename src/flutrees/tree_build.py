@@ -29,7 +29,8 @@ def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_fr
         raise ValueError("mutation_df must have columns: record_id, mutations")
     if mutation_df.empty or mutation_df.record_id.duplicated().any():
         raise ValueError("Tree input must contain unique record IDs and at least one record.")
-    if not 0 <= max_depth <= 20 or min_split < 1 or not 0 <= min_freq <= 0.5:
+    if (type(max_depth) is not int or type(min_split) is not int or type(min_freq) not in (int, float)
+            or not 0 <= max_depth <= 20 or min_split < 1 or not 0 <= min_freq <= 0.5):
         raise ValueError("Invalid tree settings.")
 
     # mutation -> set(record_id)
@@ -91,7 +92,7 @@ def build_tree(mutation_df: pd.DataFrame, max_depth: int, min_split: int, min_fr
 
 
 def prune_tree(root: Node, prune_cutoff: int) -> Node:
-    if prune_cutoff < 1:
+    if type(prune_cutoff) is not int or prune_cutoff < 1:
         raise ValueError("Pruning cutoff must be at least 1.")
     out = Node(
         root.node_id,

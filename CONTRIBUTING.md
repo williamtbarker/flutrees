@@ -12,6 +12,8 @@ Contributions that improve correctness, reproducibility, portability, documentat
 6. Update documentation and tests when behavior changes.
 7. Open a pull request describing the change and its validation.
 
+See [the maintainer test and release procedure](docs/MAINTAINER_RELEASE.md) for macOS setup, manual GUI acceptance, and the publication sequence.
+
 ## Run the complete acceptance suite
 
 Install MAFFT, Graphviz, Tk, Xvfb, and the development dependencies. Fetch repository history before creating the immutable comparison checkout:

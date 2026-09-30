@@ -36,7 +36,7 @@ class SplitSelector:
         self.min_split = min_split
         self.min_freq = min_freq
         self.strategy = SplitStrategy(strategy)
-        self.positions = {}
+        self.positions: dict[int, list[set[str]]] = {}
         for mutation, ids in mutations.items():
             self.positions.setdefault(int(mutation[1:-1]), []).append(ids)
 
